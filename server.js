@@ -360,7 +360,18 @@ app.get('/api/health', async (_req,res) => {
   try { await q('SELECT 1'); res.json({ ok: true }); } catch { res.status(500).json({ ok:false }); }
 });
 
-app.get('/api/session', (req,res) => res.json({ user: req.session.user || null }));
+app.get('/api/session', async (req,res) => {
+  try {
+    if (!req.session.user) return res.json({ user: null });
+    const r = await q('SELECT id,full_name,email,role,is_active,profile_image FROM users WHERE id=$1', [req.session.user.id]);
+    if (!r.rowCount) { req.session.destroy(() => {}); return res.json({ user: null }); }
+    req.session.user = serializeUser(r.rows[0]);
+    res.json({ user: req.session.user });
+  } catch (e) {
+    console.error('Session refresh failed:', e.message);
+    res.json({ user: req.session.user || null });
+  }
+});
 
 app.get('/api/csrf', (req,res)=>res.json({token:ensureCsrf(req)}));
 
@@ -482,7 +493,7 @@ app.patch('/api/users/:id', auth, requireRole('coordinator'), async (req,res) =>
   try {
     const id=Number(req.params.id);
     if (!Number.isInteger(id) || id<=0) return res.status(400).json({error:'Invalid user id.'});
-    const target=await q('SELECT id,full_name,email,password_hash,role,is_active,panel_availability FROM users WHERE id=$1',[id]);
+    const target=await q('SELECT id,full_name,email,password_hash,role,is_active,panel_availability,profile_image FROM users WHERE id=$1',[id]);
     if(!target.rowCount)return res.status(404).json({error:'User not found.'});
     const user=target.rows[0];
     const name=cleanText(req.body.full_name,120), email=cleanEmail(req.body.email), password=String(req.body.password||''), availability=cleanText(req.body.panel_availability,1000), role=cleanText(req.body.role,40);
@@ -491,7 +502,7 @@ app.patch('/api/users/:id', auth, requireRole('coordinator'), async (req,res) =>
     if(exists.rowCount)return res.status(409).json({error:'That email address is already in use.'});
     let hash=user.password_hash;
     if(password){if(password.length<8)return res.status(400).json({error:'New password must be at least 8 characters.'});hash=await bcrypt.hash(password,12);}
-    const r=await q('UPDATE users SET full_name=$1,email=$2,password_hash=$3,panel_availability=$4,role=$5,updated_at=NOW() WHERE id=$6 RETURNING id,full_name,email,role,is_active,created_at,panel_availability',[name,email,hash,availability||null,role,id]);
+    const r=await q('UPDATE users SET full_name=$1,email=$2,password_hash=$3,panel_availability=$4,role=$5,updated_at=NOW() WHERE id=$6 RETURNING id,full_name,email,role,is_active,created_at,panel_availability,profile_image',[name,email,hash,availability||null,role,id]);
     await audit(req.session.user.id,'update','user',id,{});
     res.json({user:r.rows[0]});
   } catch(e){console.error(e);res.status(500).json({error:'Unable to update user account.'});}
