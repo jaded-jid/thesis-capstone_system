@@ -150,3 +150,5 @@ body.dark-mode .search-input,body.dark-mode .status-select{background:var(--surf
 .field-note{display:block;color:#8a909c;font-size:10px;margin-top:6px;font-weight:400}
 
 .profile-upload-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.danger-outline{border:1px solid #d98a8a;color:#a64242;background:transparent}.danger-outline:hover{background:#fff3f3}
+
+.user-name-cell{display:flex;align-items:center;gap:10px;min-width:190px}.user-table-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:10px;display:grid;place-items:center;overflow:hidden;background:#efedff;color:#6558ed;font-size:10px;font-weight:800}.user-table-avatar img{width:100%;height:100%;object-fit:cover;display:block}.user-table-avatar.has-image{background:transparent}

@@ -425,7 +425,7 @@ app.get('/api/dashboard', auth, async (req,res) => {
 
 // User management — Coordinator only. No public registration endpoint exists.
 app.get('/api/users', auth, requireRole('coordinator'), async (_req,res) => {
-  const r = await q('SELECT id,full_name,email,role,is_active,created_at,panel_availability FROM users ORDER BY full_name');
+  const r = await q('SELECT id,full_name,email,role,is_active,created_at,panel_availability,profile_image FROM users ORDER BY full_name');
   res.json({ users:r.rows });
 });
 app.get('/api/advisers', auth, requireRole('coordinator'), async (_req,res) => {
