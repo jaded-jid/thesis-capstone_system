@@ -370,7 +370,7 @@ app.post('/api/login', loginLimiter, async (req,res) => {
     const role = cleanText(req.body.role, 40);
     const password = String(req.body.password || '');
     if (!email || !password || !validRole(role)) return res.status(400).json({ error: 'Select your role and enter your account credentials.' });
-    const r = await q('SELECT id,full_name,email,password_hash,role,is_active FROM users WHERE lower(email)=lower($1)', [email]);
+    const r = await q('SELECT id,full_name,email,password_hash,role,is_active,profile_image FROM users WHERE lower(email)=lower($1)', [email]);
     if (!r.rowCount) return res.status(401).json({ error: 'Invalid account credentials.' });
     const user = r.rows[0];
     if (!user.is_active) return res.status(403).json({ error: 'This account has been deactivated. Contact your Coordinator / Administrator.' });
