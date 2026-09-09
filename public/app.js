@@ -45,7 +45,8 @@ function avatarMarkup(user, cls='user-table-avatar'){
   const name=esc(user?.full_name||'');
   const initial=esc(initials(user?.full_name||''));
   if(!user?.profile_image) return `<span class="${cls}">${initial}</span>`;
-  return `<span class="${cls} has-image"><img src="${esc(user.profile_image)}" alt="${name} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"><span class="avatar-fallback" style="display:none">${initial}</span></span>`;
+  const src=`/api/users/${encodeURIComponent(user.id)}/profile-image?v=${encodeURIComponent(user.updated_at||Date.now())}`;
+  return `<span class="${cls} has-image"><img src="${src}" alt="${name} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"><span class="avatar-fallback" style="display:none">${initial}</span></span>`;
 }
 function setAvatar(el,user){if(!el)return; el.outerHTML=avatarMarkup(user,el.className||'top-avatar');}
 function roleLabel(r){return ROLE[r]?.label||r}
@@ -209,7 +210,7 @@ function openUserEdit(id){
     const wrap=document.createElement('div');wrap.className='modal-backdrop';wrap.id='userEditModal';
     wrap.innerHTML=`<div class="modal profile-modal"><div class="modal-head"><div><p class="micro">ADMINISTRATION</p><h3>Edit user</h3></div><button class="modal-close" data-close-user-edit>×</button></div>
       <form id="userEditForm" class="modal-form">
-        <div class="profile-summary full"><div class="profile-large-avatar">${u.profile_image?`<img src="${esc(u.profile_image)}" alt="${esc(u.full_name)} profile picture"><span class="avatar-fallback" style="display:none">${esc(initials(u.full_name))}</span>`:esc(initials(u.full_name))}</div><div><b>${esc(roleLabel(u.role))}</b><span>Coordinator-managed account</span></div></div>
+        <div class="profile-summary full"><div class="profile-large-avatar">${u.profile_image?`<img src="/api/users/${u.id}/profile-image?v=${encodeURIComponent(u.updated_at||Date.now())}" alt="${esc(u.full_name)} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"><span class="avatar-fallback" style="display:none">${esc(initials(u.full_name))}</span>`:esc(initials(u.full_name))}</div><div><b>${esc(roleLabel(u.role))}</b><span>Coordinator-managed account</span></div></div>
         <label>Full name<input id="ue-name" value="${esc(u.full_name)}" required></label>
         <label>Email address<input id="ue-email" type="email" value="${esc(u.email)}" required></label>
         <label>Role<select id="ue-role"><option value="student">Student</option><option value="adviser">Adviser</option><option value="panel_member">Panel Member</option><option value="coordinator">Coordinator / Administrator</option></select></label>
