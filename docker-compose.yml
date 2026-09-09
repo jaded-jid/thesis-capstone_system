@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: thesisflow
+      POSTGRES_USER: thesisflow
+      POSTGRES_PASSWORD: thesisflow
+    volumes:
+      - thesisflow-db:/var/lib/postgresql/data
+  app:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "10000:10000"
+    environment:
+      NODE_ENV: production
+      PORT: 10000
+      DATABASE_URL: postgresql://thesisflow:thesisflow@db:5432/thesisflow
+      SESSION_SECRET: change-this-session-secret
+      ADMIN_NAME: System Administrator
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: ChangeThisPasswordImmediately
+      SEED_DEMO_USERS: "true"
+volumes:
+  thesisflow-db:

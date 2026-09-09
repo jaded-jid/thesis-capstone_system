@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#eef2f5" />
+  <title>A Thesis and Capstone Defense Scheduling and Panel Management System</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <main id="authRoot" class="auth-shell">
+    <section class="auth-brand-panel">
+      <div class="auth-brand-copy">
+        <p class="micro">THESIS & CAPSTONE</p>
+        <h1>A Thesis and Capstone Defense Scheduling and Panel Management System</h1>
+        <p>One calendar for every thesis defense, panel, and room on campus.</p>
+        <small class="auth-copy-note">Requests, panel assignments, room bookings, and evaluations — tracked in one place, with conflicts caught before they happen.</small>
+      </div>
+      <div class="auth-rail">
+        <div><span>01</span><b>One place to coordinate</b><small>Defense requests, schedules, panels, rooms, and results.</small></div>
+        <div><span>02</span><b>Role-based access</b><small>Each account sees only the work relevant to its role.</small></div>
+        <div><span>03</span><b>Clear scheduling controls</b><small>Availability and conflicts are checked before changes are saved.</small></div>
+      </div>
+      <div class="auth-brand-footer">Academic defense scheduling and panel management</div>
+    </section>
+
+    <section class="auth-form-panel">
+      <div class="auth-form-wrap">
+        <div class="mobile-brand brand-lockup">
+          <div><strong>Defense Management</strong><small>Academic Scheduling System</small></div>
+        </div>
+
+        <div id="roleStep" class="auth-step active">
+          <div class="step-heading"><span class="step-index">01</span><div><p class="micro">SIGN IN</p><h2>Select your role</h2></div></div>
+          <p class="helper">Choose the role issued to your account.</p>
+          <div class="role-grid" id="roleGrid">
+            <button class="role-choice" data-role="student"><span class="role-icon student">S</span><span><b>Student</b><small>Submit and monitor defense requests</small></span><i>→</i></button>
+            <button class="role-choice" data-role="adviser"><span class="role-icon adviser">A</span><span><b>Adviser</b><small>Review requests and guide assigned projects</small></span><i>→</i></button>
+            <button class="role-choice" data-role="panel_member"><span class="role-icon panel">P</span><span><b>Panel Member</b><small>Manage assigned defenses and evaluations</small></span><i>→</i></button>
+            <button class="role-choice" data-role="coordinator"><span class="role-icon coordinator">C</span><span><b>Coordinator / Administrator</b><small>Manage the full defense workflow</small></span><i>→</i></button>
+          </div>
+          <div class="auth-notice"><b>No public registration.</b><span>Accounts are created and managed by the Coordinator / Administrator.</span></div>
+        </div>
+
+        <div id="loginStep" class="auth-step">
+          <button class="back-link" id="changeRole">← Change role</button>
+          <div class="selected-role" id="selectedRole"></div>
+          <div class="step-heading"><span class="step-index">02</span><div><p class="micro">AUTHORIZED ACCESS</p><h2>Sign in to your workspace</h2></div></div>
+          <p class="helper">Use the account credentials issued to you.</p>
+          <form id="loginForm" class="login-form">
+            <input type="hidden" id="loginRole" name="role" />
+            <label>Email address<input id="email" name="email" type="email" autocomplete="username" placeholder="name@institution.edu" required /></label>
+            <label>Password<div class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required /><button type="button" id="togglePassword" aria-label="Show password">Show</button></div></label>
+            <button class="primary-btn" type="submit">Sign in <span>↗</span></button>
+          </form>
+          <div class="login-no-account"><span>Don't have an account?</span><b>Contact your Coordinator / Administrator.</b></div>
+        </div>
+      </div>
+      <div class="auth-bottom-line">A Thesis and Capstone Defense Scheduling and Panel Management System</div>
+    </section>
+  </main>
+
+  <section id="appRoot" class="app-shell hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <div class="brand-lockup"><div><strong>Defense Management</strong><small>Academic Scheduling System</small></div></div>
+        <button class="mobile-nav-close" id="closeSidebar">×</button>
+      </div>
+      <div class="identity-card">
+        <button class="identity-profile" id="profileButton" type="button" aria-label="Open profile">
+          <div class="identity-avatar" id="avatar">C</div>
+          <div><b id="identityName">Coordinator</b><small id="identityRole">Coordinator / Administrator</small></div>
+        </button>
+        <span class="online-dot"></span>
+      </div>
+      <nav id="nav" class="nav"></nav>
+      <div class="sidebar-foot">
+        <div class="side-caption"><span>Secure workspace</span><i></i></div>
+        <button class="logout-btn" data-action="logout">↪ <span>Sign out</span></button>
+      </div>
+    </aside>
+
+    <div class="scrim" id="scrim"></div>
+    <section class="workspace">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-btn" id="openSidebar">☰</button>
+          <div><p class="micro" id="pageKicker">Overview</p><h1 id="pageTitle">Dashboard</h1></div>
+        </div>
+        <div class="topbar-right"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme"><span class="theme-toggle-icon">☾</span><span class="theme-toggle-label">Dark</span></button><div class="date-chip" id="today"></div></div>
+      </header>
+      <div id="content" class="content"></div>
+    </section>
+  </section>
+
+  <div id="modalRoot"></div>
+  <script src="/app.js?v=20260910-datefix"></script>
+</body>
+</html>
