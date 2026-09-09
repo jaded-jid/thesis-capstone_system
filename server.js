@@ -60,7 +60,7 @@ app.use(session({
 app.use(requireCsrf);
 
 const publicRoot = path.join(__dirname, 'public');
-app.use(express.static(publicRoot, { maxAge: isProd ? '1h' : 0 }));
+app.use(express.static(publicRoot, { maxAge: 0, etag: true }));
 
 function cleanText(value, max = 500) {
   return String(value ?? '').trim().slice(0, max);
@@ -436,27 +436,21 @@ app.get('/api/dashboard', auth, async (req,res) => {
 
 // User management — Coordinator only. No public registration endpoint exists.
 app.get('/api/users', auth, requireRole('coordinator'), async (_req,res) => {
+  res.set('Cache-Control','no-store, no-cache, must-revalidate, private');
   const r = await q('SELECT id,full_name,email,role,is_active,created_at,updated_at,panel_availability,profile_image FROM users ORDER BY full_name');
   res.json({ users:r.rows });
 });
-
-app.get('/api/users/:id/profile-image', auth, async (req,res) => {
+app.get('/api/users/:id/profile-image', auth, requireRole('coordinator'), async (req,res) => {
   try {
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) return res.status(400).end();
-    if (req.session.user.role !== 'coordinator' && Number(req.session.user.id) !== id) return res.status(403).end();
-    const r = await q('SELECT profile_image FROM users WHERE id=$1 AND is_active=true', [id]);
-    if (!r.rowCount || !r.rows[0].profile_image) return res.status(404).end();
-    const m = String(r.rows[0].profile_image).match(/^data:image\/(png|jpeg|jpg|webp);base64,([A-Za-z0-9+/=]+)$/);
-    if (!m) return res.status(404).end();
-    const ext = m[1] === 'jpg' ? 'jpeg' : m[1];
-    const mime = `image/${ext}`;
-    res.set('Content-Type', mime);
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-    res.send(Buffer.from(m[2], 'base64'));
-  } catch (e) { console.error('Profile image read failed:', e.message); res.status(500).end(); }
+    const id=Number(req.params.id);
+    if(!Number.isInteger(id)||id<=0) return res.status(400).end();
+    const r=await q('SELECT profile_image FROM users WHERE id=$1',[id]);
+    if(!r.rowCount || !r.rows[0].profile_image) return res.status(404).end();
+    const m=String(r.rows[0].profile_image).match(/^data:(image\/(?:png|jpeg|jpg|webp));base64,([A-Za-z0-9+/=]+)$/);
+    if(!m) return res.status(404).end();
+    res.set('Cache-Control','no-store, no-cache, must-revalidate, private');
+    res.type(m[1]).send(Buffer.from(m[2],'base64'));
+  } catch(e) { console.error('Profile image endpoint failed:',e.message); res.status(500).end(); }
 });
 app.get('/api/advisers', auth, requireRole('coordinator'), async (_req,res) => {
   const r = await q("SELECT id,full_name,email FROM users WHERE role='adviser' AND is_active=true ORDER BY full_name");
