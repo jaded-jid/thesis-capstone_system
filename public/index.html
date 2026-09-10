@@ -24,7 +24,17 @@
         <a href="#roles">ROLES</a>
         <a href="#contact">CONTACT</a>
       </div>
+      <button class="hero-menu-toggle" id="heroMenuToggle" type="button" aria-expanded="false" aria-controls="heroMobileMenu" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
     </nav>
+    <div class="hero-mobile-menu" id="heroMobileMenu" role="dialog" aria-modal="true" aria-label="Site menu" aria-hidden="true" inert>
+      <div class="hero-mobile-menu__inner">
+        <a href="#login">LOGIN</a>
+        <a href="#roles">ROLES</a>
+        <a href="#contact">CONTACT</a>
+      </div>
+    </div>
     <div class="hero-auth__body">
       <section class="hero-auth__panel" aria-label="System login">
         <div id="roleStep" class="hero-step active">

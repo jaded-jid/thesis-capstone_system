@@ -295,10 +295,17 @@ function exportRows(rows,filename){if(!rows.length){toast('No report data to exp
 async function exportSummary(){const kinds=['defense-schedule','panel-assignment','student-status','evaluation'];for(const k of kinds){const d=await api('/api/reports/'+k);exportRows(d.rows||[],`report-${k}.csv`)}toast('Reports exported.')}
 
 // Role selection and login flow
-$$('.role-choice').forEach(btn=>btn.addEventListener('click',()=>{state.role=btn.dataset.role;applyRoleTheme(state.role);$$('.role-choice').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');$('#roleStep').classList.remove('active');$('#loginStep').classList.add('active');$('#loginRole').value=state.role;$('#selectedRole').innerHTML=`<span class="role-icon ${ROLE[state.role].tone}">${ROLE[state.role].icon}</span> ${esc(roleLabel(state.role))}`}));
+$$('.hero-role').forEach(btn=>btn.addEventListener('click',()=>{state.role=btn.dataset.role;applyRoleTheme(state.role);$$('.hero-role').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');$('#roleStep').classList.remove('active');$('#loginStep').classList.add('active');$('#loginRole').value=state.role;$('#selectedRole').textContent=roleLabel(state.role)}));
 $('#changeRole').addEventListener('click',()=>{$('#loginStep').classList.remove('active');$('#roleStep').classList.add('active')});
 $('#togglePassword').addEventListener('click',()=>{const p=$('#password');p.type=p.type==='password'?'text':'password';$('#togglePassword').textContent=p.type==='password'?'Show':'Hide'});
 $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();try{const d=await api('/api/login',{method:'POST',body:JSON.stringify({email:$('#email').value,password:$('#password').value,role:$('#loginRole').value})});state.user=d.user;state.role=d.user.role;csrfToken=d.csrfToken||csrfToken;showApp();toast(`Welcome, ${state.user.full_name.split(' ')[0]}.`)}catch(err){toast(err.message)}});
+
+const heroMenuToggle=$('#heroMenuToggle'), heroMobileMenu=$('#heroMobileMenu');
+function setHeroMenu(open){if(!heroMenuToggle||!heroMobileMenu)return;heroMenuToggle.classList.toggle('is-open',open);heroMenuToggle.setAttribute('aria-expanded',String(open));heroMenuToggle.setAttribute('aria-label',open?'Close menu':'Open menu');heroMobileMenu.classList.toggle('is-open',open);heroMobileMenu.setAttribute('aria-hidden',String(!open));if(open){heroMobileMenu.removeAttribute('inert');document.body.classList.add('menu-open');}else{heroMobileMenu.setAttribute('inert','');document.body.classList.remove('menu-open');}}
+heroMenuToggle?.addEventListener('click',()=>setHeroMenu(!heroMenuToggle.classList.contains('is-open')));
+heroMobileMenu?.addEventListener('click',e=>{if(e.target===heroMobileMenu)setHeroMenu(false); if(e.target.closest('a'))setHeroMenu(false);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&heroMenuToggle?.classList.contains('is-open')){setHeroMenu(false);heroMenuToggle.focus();}});
+window.addEventListener('resize',()=>{if(window.innerWidth>900)setHeroMenu(false);});
 
 // App actions
 document.addEventListener('click',async e=>{
