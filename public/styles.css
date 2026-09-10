@@ -196,7 +196,7 @@ body.menu-open{overflow:hidden}
   .hero-auth__logo{font-size:18px;letter-spacing:.12em;white-space:normal;max-width:70%}
   .hero-auth__body{padding-left:14px;padding-right:14px}
   .hero-role{grid-template-columns:28px minmax(0,1fr) 12px;column-gap:8px;padding:12px 10px}
-  .hero-role span{font-size:9px}.hero-role strong{font-size:10px}.hero-role small{font-size:8px}.hero-role i{font-size:10px}
+  .hero-role span{font-size:8px}.hero-role strong{font-size:10px}.hero-role small{font-size:8px}.hero-role i{font-size:10px}
 }
 @media(max-height:640px){
   .hero-auth{height:auto;min-height:100svh;overflow:auto}
@@ -228,26 +228,26 @@ body{overflow:hidden}
   .hero-auth__body::-webkit-scrollbar{display:none}
 }
 
-/* Final viewport tuning: target 1366×768 without cropping login content, while restoring normal app-page scrolling after sign-in. */
+/* Final viewport tuning: target 1366×647 without cropping login content, while restoring normal app-page scrolling after sign-in. */
 body{overflow:auto}
-@media (min-width:1101px) and (max-width:1599px) and (min-height:641px) and (max-height:899px){
+@media (min-width:1101px) and (max-width:1599px) and (min-height:641px) and (max-height:700px){
   .hero-auth{height:100vh;min-height:0;max-height:100vh;overflow:hidden}
-  .hero-auth__nav{padding-top:18px;padding-bottom:18px}
-  .hero-auth__logo{font-size:22px}
-  .hero-auth__navlinks{gap:26px}
-  .hero-auth__body{overflow:hidden;padding:14px 34px 16px}
+  .hero-auth__nav{padding-top:12px;padding-bottom:12px}
+  .hero-auth__logo{font-size:20px}
+  .hero-auth__navlinks{gap:20px}
+  .hero-auth__body{overflow:hidden;padding:10px 34px 12px}
   .hero-auth__panel{width:min(430px,38vw);min-width:0}
-  .hero-chip{padding:8px 12px;font-size:10px}
-  .hero-auth h1{font-size:clamp(50px,4.3vw,60px);line-height:.94;margin-top:24px}
-  .hero-tagline{font-size:10px;line-height:1.35;margin-top:12px}
-  .hero-form-label{margin-top:24px;font-size:10px}
-  .hero-role-list{gap:7px;margin-top:10px}
-  .hero-role{grid-template-columns:34px 1fr 16px;column-gap:10px;padding:10px 12px}
+  .hero-chip{padding:7px 11px;font-size:9px}
+  .hero-auth h1{font-size:clamp(44px,4vw,54px);line-height:.92;margin-top:18px}
+  .hero-tagline{font-size:9px;line-height:1.3;margin-top:9px}
+  .hero-form-label{margin-top:17px;font-size:9px}
+  .hero-role-list{gap:5px;margin-top:8px}
+  .hero-role{grid-template-columns:30px 1fr 14px;column-gap:8px;padding:7px 10px}
   .hero-role span{font-size:9px}
-  .hero-role strong{font-size:11px;letter-spacing:.12em}
-  .hero-role small{font-size:9px;line-height:1.3;margin-top:2px}
-  .hero-note{font-size:10px;line-height:1.4;margin-top:12px}
-  .hero-auth__footer{padding-top:12px;padding-bottom:12px;font-size:11px}
+  .hero-role strong{font-size:10px;letter-spacing:.1em}
+  .hero-role small{font-size:8px;line-height:1.2;margin-top:1px}
+  .hero-note{font-size:9px;line-height:1.3;margin-top:8px}
+  .hero-auth__footer{padding-top:9px;padding-bottom:9px;font-size:10px}
 }
 
 /* Keep application content scrollable exactly as before. */
