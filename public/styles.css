@@ -437,3 +437,20 @@ html,body{overflow:auto;}
 #appRoot:not(.hidden){display:flex;min-height:100vh;height:auto;overflow:visible;}
 #appRoot:not(.hidden) .workspace{overflow:visible;min-height:100vh;height:auto;}
 #appRoot:not(.hidden) .content{overflow:visible;}
+
+/* 1366×647 final visual balance: make the login composition slightly larger and center it on the viewport. */
+@media (min-width:1101px) and (max-width:1599px) and (min-height:641px) and (max-height:700px){
+  .hero-auth__body{justify-content:center;padding-left:34px;padding-right:34px;padding-top:8px;padding-bottom:8px}
+  .hero-auth__panel{width:min(520px,46vw);min-width:0;margin:0 auto}
+  .hero-chip{padding:8px 12px;font-size:10px}
+  .hero-auth h1{font-size:clamp(50px,4.6vw,64px);margin-top:20px}
+  .hero-tagline{font-size:10px;line-height:1.35;margin-top:10px}
+  .hero-form-label{margin-top:20px;font-size:10px}
+  .hero-role-list{gap:6px;margin-top:9px}
+  .hero-role{grid-template-columns:34px 1fr 16px;column-gap:10px;padding:8px 11px}
+  .hero-role span{font-size:10px}
+  .hero-role strong{font-size:11px;letter-spacing:.11em}
+  .hero-role small{font-size:8.5px;line-height:1.25;margin-top:2px}
+  .hero-note{font-size:9.5px;line-height:1.35;margin-top:9px}
+  .hero-auth__footer{padding-top:9px;padding-bottom:9px;font-size:10px}
+}
