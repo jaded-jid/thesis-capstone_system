@@ -602,3 +602,43 @@ body:not(.dark-mode) #authRoot .hero-bg-scan{background:linear-gradient(to botto
   .hero-bg-orbit--two{right:8%;top:50%;}
 }
 @media (prefers-reduced-motion:reduce){.hero-bg-orbit--one,.hero-bg-orbit--two,.hero-bg-scan{animation:none!important}}
+
+/* Final profile-picture preview + guaranteed cinematic light-theme legibility. */
+[data-profile-preview]{cursor:zoom-in}
+[data-profile-preview]:focus-visible{outline:2px solid var(--role-accent,#6558ed);outline-offset:2px}
+.identity-avatar.has-image,.top-avatar.has-image,.user-table-avatar.has-image,.profile-large-avatar[data-profile-preview]{position:relative}
+.identity-avatar.has-image img,.top-avatar.has-image img,.user-table-avatar.has-image img,.profile-large-avatar[data-profile-preview] img{pointer-events:auto;cursor:zoom-in}
+.image-preview-backdrop{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;padding:30px;background:rgba(0,0,0,.82);backdrop-filter:blur(8px)}
+.image-preview-dialog{position:relative;max-width:min(90vw,900px);max-height:88vh;display:flex;align-items:center;justify-content:center}
+.image-preview-image{display:block;max-width:88vw;max-height:82vh;width:auto;height:auto;object-fit:contain;border:1px solid rgba(255,255,255,.3);box-shadow:0 22px 70px rgba(0,0,0,.45);background:#111}
+.image-preview-close{position:absolute;right:-16px;top:-16px;width:38px;height:38px;border:1px solid rgba(255,255,255,.4);background:#111;color:#fff;display:grid;place-items:center;font:300 24px/1 Sora,sans-serif;cursor:pointer;z-index:2}
+body:not(.dark-mode) #authRoot .hero-auth__media{filter:none}
+body:not(.dark-mode) #authRoot .hero-auth__scrim{background:linear-gradient(90deg,rgba(246,248,250,.84),rgba(246,248,250,.72) 44%,rgba(246,248,250,.9) 72%,rgba(246,248,250,.96)),linear-gradient(180deg,rgba(255,255,255,.48),rgba(255,255,255,.68)) !important}
+body:not(.dark-mode) #authRoot .hero-auth__logo,
+body:not(.dark-mode) #authRoot h1,
+body:not(.dark-mode) #authRoot h2,
+body:not(.dark-mode) #authRoot .hero-role strong,
+body:not(.dark-mode) #authRoot .hero-contact-box strong{color:#101820 !important}
+body:not(.dark-mode) #authRoot .hero-chip,
+body:not(.dark-mode) #authRoot .hero-role,
+body:not(.dark-mode) #authRoot .hero-contact-box{background:rgba(255,255,255,.88) !important}
+body:not(.dark-mode) #authRoot .hero-tagline,
+body:not(.dark-mode) #authRoot .hero-form-label,
+body:not(.dark-mode) #authRoot .hero-note,
+body:not(.dark-mode) #authRoot .hero-field,
+body:not(.dark-mode) #authRoot .hero-back,
+body:not(.dark-mode) #authRoot .hero-role-purpose{color:#445463 !important}
+body:not(.dark-mode) #authRoot .hero-role small,
+body:not(.dark-mode) #authRoot .hero-role span,
+body:not(.dark-mode) #authRoot .hero-role i,
+body:not(.dark-mode) #authRoot .hero-contact-box__eyebrow,
+body:not(.dark-mode) #authRoot .hero-contact-box p,
+body:not(.dark-mode) #authRoot .hero-contact-box small{color:#536574 !important}
+body:not(.dark-mode) #authRoot .hero-field input{color:#101820 !important;background:rgba(255,255,255,.96) !important;border-bottom-color:rgba(16,24,32,.36) !important}
+body:not(.dark-mode) #authRoot .hero-field input::placeholder{color:#6d7b88 !important}
+body:not(.dark-mode) #authRoot .hero-contact-box{border-color:rgba(16,24,32,.22) !important;color:#293744 !important}
+body:not(.dark-mode) #authRoot .hero-auth__footer{color:#536574 !important;border-color:rgba(16,24,32,.18) !important}
+body:not(.dark-mode) #authRoot .hero-theme-option{color:#334454 !important}
+body:not(.dark-mode) #authRoot .hero-theme-option.is-active{background:#101820 !important;color:#fff !important}
+body:not(.dark-mode) #authRoot .hero-role:hover{background:#fff !important}
+body:not(.dark-mode) #authRoot .hero-btn--solid{background:#101820 !important;color:#fff !important}
