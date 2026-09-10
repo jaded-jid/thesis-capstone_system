@@ -57,6 +57,8 @@ function showApp(){
   $('#authRoot').classList.add('hidden');$('#appRoot').classList.remove('hidden');
   $('#identityName').textContent=state.user.full_name;$('#identityRole').textContent=state.user.role_label;
   setAvatar($('#avatar'), state.user);
+  const profileButton=$('#profileButton');
+  if(profileButton){ profileButton.onclick=null; profileButton.addEventListener('click', openProfile, {once:false}); }
   renderNav();renderView('dashboard');
 }
 function renderNav(){
@@ -340,7 +342,6 @@ document.addEventListener('click',async e=>{
   const projectDelete=e.target.closest('[data-project-delete]');if(projectDelete){confirmModal('Remove this project?','This permanently removes the project and its linked defense requests, schedules, panel assignments, evaluations, and feedback.','Remove project',`deleteProject:${projectDelete.dataset.projectDelete}`);return;}
   const editUser=e.target.closest('[data-user-edit]');if(editUser){openUserEdit(editUser.dataset.userEdit);return}
   const deleteUser=e.target.closest('[data-user-delete]');if(deleteUser){confirmModal('Delete this account?','This permanently removes the user account and related assignments/evaluations. This action cannot be undone.','Delete',`deleteUser:${deleteUser.dataset.userDelete}`);return}
-  if(e.target.closest('#profileButton'))return openProfile();
   if(e.target.closest('[data-submit-modal]'))return submitModal(e.target.closest('[data-submit-modal]').dataset.submitModal);
   if(e.target.closest('[data-action="logout"]')){await api('/api/logout',{method:'POST'});location.reload();return}
   const review=e.target.closest('[data-review]');if(review){openReviewModal(Number(review.dataset.review),review.dataset.reviewStatus==='approve');return}
@@ -407,3 +408,5 @@ $('#authThemeDark')?.addEventListener('click',()=>applyTheme('dark'));
 $('#openSidebar').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#scrim').classList.add('show')});$('#closeSidebar').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')});$('#scrim').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')});
 
 (async function bootstrap(){try{const c=await fetch('/api/csrf');const cd=await c.json().catch(()=>({}));csrfToken=cd.token||'';const s=await api('/api/session');if(s.user){state.user=s.user;state.role=s.user.role;showApp()}}catch{}})();
+
+// Profile picture clickability fix v7

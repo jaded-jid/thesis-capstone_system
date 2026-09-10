@@ -94,7 +94,7 @@ body.theme-student .status.completed,body.theme-adviser .status.completed,body.t
 body.theme-student .status.inprogress,body.theme-adviser .status.inprogress,body.theme-panel .status.inprogress,body.theme-coordinator .status.inprogress{border-color:var(--role-accent-border)}
 body.theme-student .progress,body.theme-adviser .progress,body.theme-panel .progress,body.theme-coordinator .progress{background:#edf0f2}
 body.theme-student .status-select:focus,body.theme-adviser .status-select:focus,body.theme-panel .status-select:focus,body.theme-coordinator .status-select:focus{border-color:var(--role-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--role-accent) 12%,transparent)}
-.identity-profile{border:0;background:transparent;padding:0;margin:0;display:flex;align-items:center;gap:11px;text-align:left;color:inherit;min-width:0;flex:1}
+.identity-profile{cursor:pointer;pointer-events:auto;border:0;background:transparent;padding:0;margin:0;display:flex;align-items:center;gap:11px;text-align:left;color:inherit;min-width:0;flex:1}
 .identity-profile:hover .identity-avatar{transform:translateY(-1px) scale(1.02);box-shadow:0 10px 22px rgba(0,0,0,.16)}
 .identity-profile:hover b{text-decoration:underline;text-underline-offset:3px}
 .identity-profile .identity-avatar{transition:.2s ease}
@@ -145,7 +145,7 @@ body.dark-mode .search-input,body.dark-mode .status-select{background:var(--surf
 
 .field-note{font-weight:600;font-size:12px;opacity:.72}.multi-select{min-height:150px;line-height:1.65;padding:8px}.multi-select option{padding:8px 6px}.multi-select option:checked{font-weight:700}
 .identity-avatar.has-image,.top-avatar.has-image,.profile-large-avatar img{overflow:hidden}
-.identity-avatar img,.top-avatar img,.profile-large-avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+.identity-avatar img,.top-avatar img,.profile-large-avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit;pointer-events:none}
 .profile-large-avatar{overflow:hidden}
 .field-note{display:block;color:#8a909c;font-size:10px;margin-top:6px;font-weight:400}
 
