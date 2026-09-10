@@ -257,3 +257,49 @@ body{overflow:auto}
 @media(max-width:1080px){
   body{overflow:auto}
 }
+
+/* Registration contact + richer defense-themed backdrop */
+.hero-auth__media{background:
+  radial-gradient(circle at 18% 30%, rgba(255,255,255,.08) 0 1px, transparent 2px),
+  radial-gradient(circle at 78% 70%, rgba(255,255,255,.06) 0 1px, transparent 2px),
+  linear-gradient(115deg, rgba(255,255,255,.025), transparent 32%, rgba(255,255,255,.03) 70%, transparent),
+  #000;
+}
+.hero-auth__media:after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;background:
+  linear-gradient(90deg, transparent 0 16%, rgba(255,255,255,.045) 16.1% 16.18%, transparent 16.3% 100%),
+  linear-gradient(180deg, transparent 0 24%, rgba(255,255,255,.035) 24.1% 24.18%, transparent 24.3% 100%),
+  repeating-linear-gradient(135deg, transparent 0 92px, rgba(255,255,255,.018) 93px 94px, transparent 95px 188px),
+  radial-gradient(circle at 28% 56%, transparent 0 150px, rgba(255,255,255,.06) 151px, transparent 152px),
+  radial-gradient(circle at 31% 56%, transparent 0 235px, rgba(255,255,255,.035) 236px, transparent 237px);
+  mix-blend-mode:screen;
+}
+.hero-contact-box{width:100%;margin-top:24px;padding-top:18px;border-top:1px solid var(--hero-line);color:var(--hero-dim);}
+.hero-contact-box__eyebrow{display:block;font:400 9px/1 "JetBrains Mono",monospace;letter-spacing:.18em;color:var(--hero-dimmer);margin-bottom:7px}
+.hero-contact-box strong{display:block;font:400 12px/1.2 "JetBrains Mono",monospace;letter-spacing:.12em;color:#fff;margin-bottom:8px}
+.hero-contact-box p{margin:0;max-width:610px;font:300 11px/1.55 "Sora",sans-serif;color:var(--hero-dim)}
+.hero-contact-box small{display:block;margin-top:8px;font:300 9px/1.5 "JetBrains Mono",monospace;letter-spacing:.03em;color:var(--hero-dimmer)}
+@media (min-width:721px){
+  .hero-auth__navlinks,.hero-menu-toggle,.hero-mobile-menu{display:none!important}
+  .hero-auth__nav{padding-top:20px;padding-bottom:20px}
+}
+@media (max-height:680px) and (min-width:721px){
+  .hero-auth__nav{padding-top:10px;padding-bottom:10px}
+  .hero-auth__body{padding-top:8px;padding-bottom:8px}
+  .hero-auth__footer{padding-top:8px;padding-bottom:8px}
+  .hero-auth h1{font-size:clamp(38px,4vw,52px);margin-top:14px}
+  .hero-form-label{margin-top:14px}
+  .hero-role-list{gap:4px;margin-top:7px}
+  .hero-role{padding:6px 9px}
+  .hero-role strong{font-size:9px}
+  .hero-role small{font-size:7px}
+  .hero-note{font-size:8px;margin-top:6px}
+  .hero-contact-box{margin-top:10px;padding-top:9px}
+  .hero-contact-box p{font-size:9px;line-height:1.35}
+  .hero-contact-box small{font-size:7px;margin-top:4px}
+}
+
+/* Keep normal application scrolling after authentication. */
+html,body{overflow:auto;}
+#appRoot:not(.hidden){min-height:100vh;overflow:visible;}
+#appRoot:not(.hidden) .workspace{min-height:100vh;overflow:visible;}
+#appRoot:not(.hidden) .sidebar{overflow:visible;}
