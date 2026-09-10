@@ -482,8 +482,11 @@ body:not(.dark-mode) #authRoot .hero-field input:focus{border-bottom-color:#1721
 body:not(.dark-mode) #authRoot .hero-password button{color:#596674}
 body:not(.dark-mode) #authRoot .hero-btn--solid{background:#17212b;color:#fff}
 body:not(.dark-mode) #authRoot .hero-btn--solid:hover{background:#2b3947}
-body:not(.dark-mode) #authRoot .hero-contact-box{background:rgba(255,255,255,.72);border-color:rgba(23,33,43,.15);color:#263340}
+body:not(.dark-mode) #authRoot .hero-contact-box{background:rgba(255,255,255,.9);border-color:rgba(23,33,43,.2);color:#263340;box-shadow:0 8px 24px rgba(20,30,40,.05)}
 body:not(.dark-mode) #authRoot .hero-contact-box strong{color:#17212b}
+body:not(.dark-mode) #authRoot .hero-contact-box__eyebrow{color:#5b6875}
+body:not(.dark-mode) #authRoot .hero-contact-box p{color:#3f4d5a}
+body:not(.dark-mode) #authRoot .hero-contact-box small{color:#5b6875}
 body:not(.dark-mode) #authRoot .hero-auth__footer{color:#5e6b78;border-color:rgba(23,33,43,.16)}
 body:not(.dark-mode) #authRoot .hero-auth__media:after{opacity:.16}
 
