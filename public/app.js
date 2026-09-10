@@ -295,7 +295,19 @@ function exportRows(rows,filename){if(!rows.length){toast('No report data to exp
 async function exportSummary(){const kinds=['defense-schedule','panel-assignment','student-status','evaluation'];for(const k of kinds){const d=await api('/api/reports/'+k);exportRows(d.rows||[],`report-${k}.csv`)}toast('Reports exported.')}
 
 // Role selection and login flow
-$$('.hero-role').forEach(btn=>btn.addEventListener('click',()=>{state.role=btn.dataset.role;applyRoleTheme(state.role);$$('.hero-role').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');$('#roleStep').classList.remove('active');$('#loginStep').classList.add('active');$('#loginRole').value=state.role;$('#selectedRole').textContent=roleLabel(state.role)}));
+const ROLE_ACCESS = {
+  student: { purpose:'STUDENT ACCESS', title:'MANAGE YOUR DEFENSE', tagline:'Submit defense requests, view your schedule, and check your recorded result.' },
+  adviser: { purpose:'ADVISER ACCESS', title:'MONITOR YOUR PROJECT', tagline:'View assigned students, track project status, and provide evaluation/comments when assigned.' },
+  panel_member: { purpose:'PANEL MEMBER ACCESS', title:'EVALUATE ASSIGNED DEFENSES', tagline:'View only assigned defenses, submit evaluations, and add comments or recommendations.' },
+  coordinator: { purpose:'COORDINATOR ACCESS', title:'MANAGE DEFENSE OPERATIONS', tagline:'Manage users, projects, schedules, rooms, panel assignments, conflicts, and reports.' }
+};
+function applyLoginRoleCopy(role){
+  const copy=ROLE_ACCESS[role]||ROLE_ACCESS.student;
+  $('#loginRolePurpose').textContent=copy.purpose;
+  $('#loginAccessTitle').textContent=copy.title;
+  $('#loginAccessTagline').textContent=copy.tagline;
+}
+$$('.hero-role').forEach(btn=>btn.addEventListener('click',()=>{state.role=btn.dataset.role;applyRoleTheme(state.role);applyLoginRoleCopy(state.role);$$('.hero-role').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');$('#roleStep').classList.remove('active');$('#loginStep').classList.add('active');$('#loginRole').value=state.role;$('#selectedRole').textContent=roleLabel(state.role)}));
 $('#changeRole').addEventListener('click',()=>{$('#loginStep').classList.remove('active');$('#roleStep').classList.add('active')});
 $('#togglePassword').addEventListener('click',()=>{const p=$('#password');p.type=p.type==='password'?'text':'password';$('#togglePassword').textContent=p.type==='password'?'Show':'Hide'});
 $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();try{const d=await api('/api/login',{method:'POST',body:JSON.stringify({email:$('#email').value,password:$('#password').value,role:$('#loginRole').value})});state.user=d.user;state.role=d.user.role;csrfToken=d.csrfToken||csrfToken;showApp();toast(`Welcome, ${state.user.full_name.split(' ')[0]}.`)}catch(err){toast(err.message)}});
@@ -382,11 +394,15 @@ function applyTheme(mode){
   document.body.classList.toggle('dark-mode',dark);
   const t=$('#themeToggle');
   if(t){t.setAttribute('aria-label',dark?'Switch to light theme':'Switch to dark theme');t.innerHTML=`<span class="theme-toggle-icon">${dark?'☀':'☾'}</span><span class="theme-toggle-label">${dark?'Light':'Dark'}</span>`;}
+  $('#authThemeLight')?.classList.toggle('is-active',!dark);
+  $('#authThemeDark')?.classList.toggle('is-active',dark);
   localStorage.setItem('defense-theme',dark?'dark':'light');
 }
 
-applyTheme(localStorage.getItem('defense-theme')||'light');
+applyTheme(localStorage.getItem('defense-theme')||'dark');
 $('#themeToggle')?.addEventListener('click',()=>applyTheme(document.body.classList.contains('dark-mode')?'light':'dark'));
+$('#authThemeLight')?.addEventListener('click',()=>applyTheme('light'));
+$('#authThemeDark')?.addEventListener('click',()=>applyTheme('dark'));
 
 $('#openSidebar').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#scrim').classList.add('show')});$('#closeSidebar').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')});$('#scrim').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')});
 

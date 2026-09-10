@@ -454,3 +454,63 @@ html,body{overflow:auto;}
   .hero-note{font-size:9.5px;line-height:1.35;margin-top:9px}
   .hero-auth__footer{padding-top:9px;padding-bottom:9px;font-size:10px}
 }
+
+/* Login-page theme control and role-specific access copy */
+.hero-theme-toggle{appearance:none;display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.24);background:rgba(0,0,0,.18);color:#fff;padding:9px 12px;border-radius:0;font:400 10px/1 "JetBrains Mono",monospace;letter-spacing:.12em;cursor:pointer;backdrop-filter:blur(8px);transition:.2s ease}
+.hero-theme-toggle:hover{border-color:rgba(255,255,255,.6);background:rgba(0,0,0,.28)}
+body:not(.dark-mode) .hero-theme-toggle{border-color:rgba(18,25,35,.22);background:rgba(255,255,255,.78);color:#18212b;box-shadow:0 8px 24px rgba(22,30,40,.08)}
+body:not(.dark-mode) #authRoot .hero-auth__scrim{background:linear-gradient(to right,rgba(246,248,250,.78) 0%,rgba(246,248,250,.70) 45%,rgba(246,248,250,.88) 72%,rgba(246,248,250,.94) 100%),linear-gradient(to bottom,rgba(255,255,255,.55),rgba(255,255,255,.38) 55%,rgba(255,255,255,.72))}
+body:not(.dark-mode) #authRoot .hero-auth__media video{filter:brightness(1.1) saturate(.72) contrast(.92)}
+body:not(.dark-mode) #authRoot{color:#17212b;background:#eef2f5}
+body:not(.dark-mode) #authRoot .hero-auth__logo,
+body:not(.dark-mode) #authRoot h1,
+body:not(.dark-mode) #authRoot h2{color:#17212b}
+body:not(.dark-mode) #authRoot .hero-chip{background:rgba(255,255,255,.62);color:#17212b;border:1px solid rgba(23,33,43,.12)}
+body:not(.dark-mode) #authRoot .hero-tagline,
+body:not(.dark-mode) #authRoot .hero-form-label,
+body:not(.dark-mode) #authRoot .hero-note,
+body:not(.dark-mode) #authRoot .hero-field,
+body:not(.dark-mode) #authRoot .hero-back{color:#4f5b68}
+body:not(.dark-mode) #authRoot .hero-role{background:rgba(255,255,255,.68);border-color:rgba(23,33,43,.18);color:#17212b;box-shadow:0 8px 26px rgba(20,30,40,.06)}
+body:not(.dark-mode) #authRoot .hero-role:hover{background:rgba(255,255,255,.9);border-color:rgba(23,33,43,.34)}
+body:not(.dark-mode) #authRoot .hero-role span,
+body:not(.dark-mode) #authRoot .hero-role small{color:#657180}
+body:not(.dark-mode) #authRoot .hero-role i{color:#4d5965}
+body:not(.dark-mode) #authRoot .hero-field input{color:#17212b;border-bottom-color:rgba(23,33,43,.28)}
+body:not(.dark-mode) #authRoot .hero-field input::placeholder{color:#6d7885}
+body:not(.dark-mode) #authRoot .hero-field input:focus{border-bottom-color:#17212b}
+body:not(.dark-mode) #authRoot .hero-password button{color:#596674}
+body:not(.dark-mode) #authRoot .hero-btn--solid{background:#17212b;color:#fff}
+body:not(.dark-mode) #authRoot .hero-btn--solid:hover{background:#2b3947}
+body:not(.dark-mode) #authRoot .hero-contact-box{background:rgba(255,255,255,.72);border-color:rgba(23,33,43,.15);color:#263340}
+body:not(.dark-mode) #authRoot .hero-contact-box strong{color:#17212b}
+body:not(.dark-mode) #authRoot .hero-auth__footer{color:#5e6b78;border-color:rgba(23,33,43,.16)}
+body:not(.dark-mode) #authRoot .hero-auth__media:after{opacity:.16}
+
+@media (min-width:1101px) and (max-width:1599px) and (min-height:641px) and (max-height:700px){
+  .hero-theme-toggle{padding:8px 10px;font-size:9px}
+  .hero-auth__nav{align-items:center}
+  #authRoot #loginAccessTitle{font-size:clamp(42px,4vw,56px);line-height:.94;max-width:520px}
+  #authRoot #loginAccessTagline{max-width:510px}
+}
+@media(max-width:720px){.hero-theme-toggle{padding:9px 10px}.hero-theme-toggle span{display:none}}
+
+/* Theme switch on cinematic login: explicit, visible, high-contrast controls. */
+.hero-theme-switch{display:inline-flex;align-items:center;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.24);padding:2px;backdrop-filter:blur(8px)}
+.hero-theme-option{appearance:none;border:0;background:transparent;color:rgba(255,255,255,.68);padding:8px 11px;font:500 9px/1 "JetBrains Mono",monospace;letter-spacing:.14em;cursor:pointer}
+.hero-theme-option.is-active{background:#fff;color:#111}
+body:not(.dark-mode) #authRoot .hero-theme-switch{border-color:rgba(21,31,42,.22);background:rgba(255,255,255,.78)}
+body:not(.dark-mode) #authRoot .hero-theme-option{color:#465363}
+body:not(.dark-mode) #authRoot .hero-theme-option.is-active{background:#17212b;color:#fff}
+.hero-role-purpose{font:500 9px/1 "JetBrains Mono",monospace;letter-spacing:.16em;color:var(--hero-dimmer);margin:0 0 8px}
+body:not(.dark-mode) #authRoot .hero-role-purpose{color:#596978}
+body.dark-mode #authRoot .hero-role-purpose{color:#9ca8b6}
+body:not(.dark-mode) #authRoot .hero-auth__nav{border-bottom:1px solid rgba(23,33,43,.12)}
+body:not(.dark-mode) #authRoot .hero-role{color:#17212b!important}
+body:not(.dark-mode) #authRoot .hero-role strong{color:#17212b!important}
+body:not(.dark-mode) #authRoot .hero-field input{background:rgba(255,255,255,.92)}
+@media (min-width:1101px) and (max-width:1400px) and (min-height:600px) and (max-height:680px){
+  #authRoot .hero-theme-switch{transform:translateY(-1px)}
+  #authRoot .hero-role-purpose{font-size:8px;margin-bottom:6px}
+  #authRoot #loginAccessTagline{font-size:8.5px;max-width:410px;line-height:1.3}
+}
