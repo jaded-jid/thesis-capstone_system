@@ -23,7 +23,7 @@ The Coordinator has access to the supplied WBS, Gantt Chart, Budget Plan, Risk R
 - Important actions are recorded in an audit log.
 
 ## Local setup
-1. Create a PostgreSQL database named `thesisflow`.
+1. Create a PostgreSQL database named `thesis`.
 2. Copy `.env.example` to `.env` and fill in your PostgreSQL credentials and a strong session secret.
 3. Run `npm install`.
 4. Run `npm start`.
