@@ -258,6 +258,35 @@ body{overflow:auto}
   body{overflow:auto}
 }
 
+/* Animated landing background: cinematic defense/scheduling data atmosphere. */
+.hero-auth__media{overflow:hidden}
+.hero-auth__media video{position:relative;z-index:0}
+.hero-auth__media::before{content:"";position:absolute;inset:-18%;z-index:1;pointer-events:none;
+  background:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px),
+    radial-gradient(circle at 68% 42%, rgba(255,255,255,.11) 0 1px, transparent 2px),
+    radial-gradient(circle at 22% 72%, rgba(255,255,255,.07) 0 1px, transparent 2px);
+  background-size:72px 72px,72px 72px,160px 160px,210px 210px;
+  opacity:.34;transform:perspective(900px) rotateX(4deg) scale(1.08);transform-origin:center;
+  animation:heroGridDrift 18s linear infinite;
+}
+.hero-auth__media::after{animation:heroSignalDrift 22s ease-in-out infinite;}
+.hero-auth__media:global{} 
+@keyframes heroGridDrift{
+  0%{background-position:0 0,0 0,0 0,0 0;transform:perspective(900px) rotateX(4deg) scale(1.08)}
+  50%{background-position:36px 48px,-36px -48px,70px -35px,-55px 50px;transform:perspective(900px) rotateX(4deg) scale(1.11)}
+  100%{background-position:72px 96px,-72px -96px,140px -70px,-110px 100px;transform:perspective(900px) rotateX(4deg) scale(1.08)}
+}
+@keyframes heroSignalDrift{
+  0%,100%{background-position:0 0,0 0,0 0,0 0,0 0;opacity:.52}
+  50%{background-position:90px -44px,-70px 58px,48px 26px,-18px 8px,22px -18px;opacity:.68}
+}
+.hero-auth__scrim{z-index:2}
+@media (prefers-reduced-motion: reduce){
+  .hero-auth__media::before,.hero-auth__media::after{animation:none!important}
+}
+
 /* Registration contact + richer defense-themed backdrop */
 .hero-auth__media{background:
   radial-gradient(circle at 18% 30%, rgba(255,255,255,.08) 0 1px, transparent 2px),
@@ -549,3 +578,27 @@ body:not(.dark-mode) #authRoot .hero-field input{background:rgba(255,255,255,.92
   #authRoot .hero-contact-box p{font-size:10px;line-height:1.4}
   #authRoot .hero-contact-box small{font-size:8px;line-height:1.35}
 }
+
+/* Animated HUD elements layered over the landing video. */
+.hero-bg-orbit{position:absolute;z-index:3;pointer-events:none;border:1px solid rgba(255,255,255,.10);border-radius:50%;
+  width:clamp(240px,28vw,520px);aspect-ratio:1;right:clamp(8%,14vw,22%);top:clamp(24%,36vh,44%);}
+.hero-bg-orbit::before,.hero-bg-orbit::after{content:"";position:absolute;inset:12%;border:1px dashed rgba(255,255,255,.07);border-radius:50%;}
+.hero-bg-orbit::after{inset:35%;border-style:solid;border-color:rgba(255,255,255,.09);}
+.hero-bg-orbit--one{animation:heroOrbitOne 26s linear infinite;}
+.hero-bg-orbit--two{width:clamp(140px,17vw,320px);right:clamp(18%,27vw,36%);top:clamp(34%,46vh,54%);border-color:rgba(255,255,255,.08);animation:heroOrbitTwo 18s linear infinite reverse;}
+.hero-bg-orbit--two::before{inset:-24%;border-color:rgba(255,255,255,.045);}
+.hero-bg-orbit--two::after{inset:42%;background:rgba(255,255,255,.65);box-shadow:0 0 28px rgba(255,255,255,.18);border:0;}
+.hero-bg-scan{position:absolute;z-index:3;inset:0;pointer-events:none;background:linear-gradient(to bottom,transparent 0%,rgba(255,255,255,.11) 48%,transparent 52%);background-size:100% 220px;opacity:.14;mix-blend-mode:screen;animation:heroScan 9s linear infinite;}
+@keyframes heroOrbitOne{from{transform:rotate(0deg) scale(1)}to{transform:rotate(360deg) scale(1.035)}}
+@keyframes heroOrbitTwo{from{transform:rotate(0deg) translate3d(0,0,0)}to{transform:rotate(360deg) translate3d(10px,-8px,0)}}
+@keyframes heroScan{from{background-position:0 -220px}to{background-position:0 calc(100% + 220px)}}
+body:not(.dark-mode) #authRoot .hero-auth__media::before{opacity:.18;filter:invert(1)}
+body:not(.dark-mode) #authRoot .hero-bg-orbit{border-color:rgba(23,33,43,.10)}
+body:not(.dark-mode) #authRoot .hero-bg-orbit::before{border-color:rgba(23,33,43,.07)}
+body:not(.dark-mode) #authRoot .hero-bg-orbit::after{border-color:rgba(23,33,43,.08)}
+body:not(.dark-mode) #authRoot .hero-bg-scan{background:linear-gradient(to bottom,transparent 0%,rgba(23,33,43,.08) 48%,transparent 52%);opacity:.12;mix-blend-mode:multiply}
+@media (max-width:720px){
+  .hero-bg-orbit--one{right:-18%;top:34%;}
+  .hero-bg-orbit--two{right:8%;top:50%;}
+}
+@media (prefers-reduced-motion:reduce){.hero-bg-orbit--one,.hero-bg-orbit--two,.hero-bg-scan{animation:none!important}}
