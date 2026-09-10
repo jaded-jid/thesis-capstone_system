@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#eef2f5" />
+  <title>A Thesis and Capstone Defense Scheduling and Panel Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Sora:wght@200;300;400&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css?v=20260910-hero">
+</head>
+<body>
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <main id="authRoot" class="hero-auth">
+    <div class="hero-auth__media" aria-hidden="true">
+      <video autoplay muted loop playsinline preload="auto" poster="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260806_132328_5f9029c8-218f-4489-82b6-29ff2849920e.png">
+        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260806_133255_956f653f-5d80-4b06-abd5-0f46c98b60fa.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div class="hero-auth__scrim" aria-hidden="true"></div>
+    <nav class="hero-auth__nav" aria-label="Primary">
+      <a class="hero-auth__logo" href="#" aria-label="Defense Management home">DEFENSE MANAGEMENT</a>
+      <button class="hero-theme-toggle" id="authThemeToggle" type="button" aria-label="Switch to dark theme">☾ <span>Dark</span></button>
+    </nav>
+    <div class="hero-auth__body">
+      <section class="hero-auth__panel" aria-label="System login">
+        <div id="roleStep" class="hero-step active">
+          <div class="hero-chip">[ THESIS / CAPSTONE ]</div>
+          <h1>DEFENSE<br>MANAGEMENT</h1>
+          <p class="hero-tagline">YOUR THESIS &amp; CAPSTONE DEFENSE SCHEDULING SYSTEM.</p>
+          <div class="hero-form-label">SELECT YOUR ROLE</div>
+          <div class="hero-role-list" id="roleGrid">
+            <button class="hero-role" data-role="student"><span>01</span><strong>STUDENT</strong><small>Submit request · view schedule · result</small><i>↗</i></button>
+            <button class="hero-role" data-role="adviser"><span>02</span><strong>ADVISER</strong><small>Assigned students · status · evaluation</small><i>↗</i></button>
+            <button class="hero-role" data-role="panel_member"><span>03</span><strong>PANEL MEMBER</strong><small>Assigned defenses · evaluation · comments</small><i>↗</i></button>
+            <button class="hero-role" data-role="coordinator"><span>04</span><strong>COORDINATOR / ADMINISTRATOR</strong><small>Users · projects · schedules · reports</small><i>↗</i></button>
+          </div>
+          <p class="hero-note">Accounts are created and managed by the Coordinator / Administrator.</p>
+        </div>
+
+        <div id="loginStep" class="hero-step">
+          <button class="hero-back" id="changeRole" type="button">← CHANGE ROLE</button>
+          <div id="selectedRole" class="hero-chip"></div>
+          <h2 id="loginAccessTitle">MANAGE YOUR DEFENSE</h2>
+          <p class="hero-tagline" id="loginAccessTagline">SUBMIT REQUESTS · VIEW SCHEDULE · CHECK RESULT.</p>
+          <form id="loginForm" class="hero-login-form" novalidate>
+            <input type="hidden" id="loginRole" name="role" />
+            <label class="hero-field">EMAIL<input id="email" name="email" type="email" autocomplete="username" placeholder="name@institution.edu" required /></label>
+            <label class="hero-field">PASSWORD<div class="hero-password"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required /><button type="button" id="togglePassword" aria-label="Show password">SHOW</button></div></label>
+            <button class="hero-btn hero-btn--solid" type="submit">SIGN IN <span>↗</span></button>
+          </form>
+          <div class="hero-contact-box" id="contact">
+            <span class="hero-contact-box__eyebrow">ACCOUNT REGISTRATION</span>
+            <strong>NEED AN ACCOUNT?</strong>
+            <p>There is no public registration. Contact your Coordinator / Administrator through your department office or official school communication channel to request an account.</p>
+            <small>Include your full name, institutional email, and assigned role (Student, Adviser, Panel Member, or Coordinator).</small>
+          </div>
+        </div>
+      </section>
+    </div>
+    <footer class="hero-auth__footer" id="contact">
+      Academic scheduling system · Secure role-based access · Thesis &amp; Capstone Defense Management
+    </footer>
+  </main>
+  <section id="appRoot" class="app-shell hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <div class="brand-lockup"><div><strong>Defense Management</strong><small>Academic Scheduling System</small></div></div>
+        <button class="mobile-nav-close" id="closeSidebar">×</button>
+      </div>
+      <div class="identity-card">
+        <button class="identity-profile" id="profileButton" type="button" aria-label="Open profile">
+          <div class="identity-avatar" id="avatar">C</div>
+          <div><b id="identityName">Coordinator</b><small id="identityRole">Coordinator / Administrator</small></div>
+        </button>
+        <span class="online-dot"></span>
+      </div>
+      <nav id="nav" class="nav"></nav>
+      <div class="sidebar-foot">
+        <div class="side-caption"><span>Secure workspace</span><i></i></div>
+        <button class="logout-btn" data-action="logout">↪ <span>Sign out</span></button>
+      </div>
+    </aside>
+
+    <div class="scrim" id="scrim"></div>
+    <section class="workspace">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-btn" id="openSidebar">☰</button>
+          <div><p class="micro" id="pageKicker">Overview</p><h1 id="pageTitle">Dashboard</h1></div>
+        </div>
+        <div class="topbar-right"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme"><span class="theme-toggle-icon">☾</span><span class="theme-toggle-label">Dark</span></button><div class="date-chip" id="today"></div></div>
+      </header>
+      <div id="content" class="content"></div>
+    </section>
+  </section>
+
+  <div id="modalRoot"></div>
+  <script src="/app.js?v=20260910-hero"></script>
+</body>
+</html>
