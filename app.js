@@ -296,13 +296,14 @@ async function exportSummary(){const kinds=['defense-schedule','panel-assignment
 
 // Role selection and login flow
 const ROLE_ACCESS = {
-  student: { title:'MANAGE YOUR DEFENSE', tagline:'SUBMIT REQUESTS · VIEW SCHEDULE · CHECK RESULT.' },
-  adviser: { title:'MONITOR YOUR PROJECTS', tagline:'VIEW ASSIGNED STUDENTS · TRACK STATUS · PROVIDE EVALUATION.' },
-  panel_member: { title:'EVALUATE ASSIGNED DEFENSES', tagline:'VIEW ASSIGNED DEFENSES · SUBMIT EVALUATION · ADD COMMENTS.' },
-  coordinator: { title:'MANAGE DEFENSE OPERATIONS', tagline:'MANAGE USERS · PROJECTS · SCHEDULES · PANELS · REPORTS.' }
+  student: { purpose:'STUDENT ACCESS', title:'MANAGE YOUR DEFENSE', tagline:'Submit defense requests, view your schedule, and check your recorded result.' },
+  adviser: { purpose:'ADVISER ACCESS', title:'MONITOR YOUR PROJECT', tagline:'View assigned students, track project status, and provide evaluation/comments when assigned.' },
+  panel_member: { purpose:'PANEL MEMBER ACCESS', title:'EVALUATE ASSIGNED DEFENSES', tagline:'View only assigned defenses, submit evaluations, and add comments or recommendations.' },
+  coordinator: { purpose:'COORDINATOR ACCESS', title:'MANAGE DEFENSE OPERATIONS', tagline:'Manage users, projects, schedules, rooms, panel assignments, conflicts, and reports.' }
 };
 function applyLoginRoleCopy(role){
   const copy=ROLE_ACCESS[role]||ROLE_ACCESS.student;
+  $('#loginRolePurpose').textContent=copy.purpose;
   $('#loginAccessTitle').textContent=copy.title;
   $('#loginAccessTagline').textContent=copy.tagline;
 }
@@ -393,14 +394,15 @@ function applyTheme(mode){
   document.body.classList.toggle('dark-mode',dark);
   const t=$('#themeToggle');
   if(t){t.setAttribute('aria-label',dark?'Switch to light theme':'Switch to dark theme');t.innerHTML=`<span class="theme-toggle-icon">${dark?'☀':'☾'}</span><span class="theme-toggle-label">${dark?'Light':'Dark'}</span>`;}
-  const at=$('#authThemeToggle');
-  if(at){at.setAttribute('aria-label',dark?'Switch to light theme':'Switch to dark theme');at.innerHTML=`${dark?'☀':'☾'} <span>${dark?'Light':'Dark'}</span>`;}
+  $('#authThemeLight')?.classList.toggle('is-active',!dark);
+  $('#authThemeDark')?.classList.toggle('is-active',dark);
   localStorage.setItem('defense-theme',dark?'dark':'light');
 }
 
-applyTheme(localStorage.getItem('defense-theme')||'light');
+applyTheme(localStorage.getItem('defense-theme')||'dark');
 $('#themeToggle')?.addEventListener('click',()=>applyTheme(document.body.classList.contains('dark-mode')?'light':'dark'));
-$('#authThemeToggle')?.addEventListener('click',()=>applyTheme(document.body.classList.contains('dark-mode')?'light':'dark'));
+$('#authThemeLight')?.addEventListener('click',()=>applyTheme('light'));
+$('#authThemeDark')?.addEventListener('click',()=>applyTheme('dark'));
 
 $('#openSidebar').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#scrim').classList.add('show')});$('#closeSidebar').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')});$('#scrim').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')});
 

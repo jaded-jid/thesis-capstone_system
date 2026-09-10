@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#eef2f5" />
   <title>A Thesis and Capstone Defense Scheduling and Panel Management System</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Sora:wght@200;300;400&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css?v=20260910-hero">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Sora:wght@200;300;400&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css?v=20260910-theme2">
 </head>
 <body>
   <div id="toast" class="toast" aria-live="polite"></div>
@@ -19,7 +19,7 @@
     <div class="hero-auth__scrim" aria-hidden="true"></div>
     <nav class="hero-auth__nav" aria-label="Primary">
       <a class="hero-auth__logo" href="#" aria-label="Defense Management home">DEFENSE MANAGEMENT</a>
-      <button class="hero-theme-toggle" id="authThemeToggle" type="button" aria-label="Switch to dark theme">☾ <span>Dark</span></button>
+      <div class="hero-theme-switch" role="group" aria-label="Login theme"><button class="hero-theme-option" id="authThemeLight" type="button">LIGHT</button><button class="hero-theme-option is-active" id="authThemeDark" type="button">DARK</button></div>
     </nav>
     <div class="hero-auth__body">
       <section class="hero-auth__panel" aria-label="System login">
@@ -40,8 +40,9 @@
         <div id="loginStep" class="hero-step">
           <button class="hero-back" id="changeRole" type="button">← CHANGE ROLE</button>
           <div id="selectedRole" class="hero-chip"></div>
+          <div class="hero-role-purpose" id="loginRolePurpose">STUDENT ACCESS</div>
           <h2 id="loginAccessTitle">MANAGE YOUR DEFENSE</h2>
-          <p class="hero-tagline" id="loginAccessTagline">SUBMIT REQUESTS · VIEW SCHEDULE · CHECK RESULT.</p>
+          <p class="hero-tagline" id="loginAccessTagline">Submit defense requests, view your schedule, and check your recorded result.</p>
           <form id="loginForm" class="hero-login-form" novalidate>
             <input type="hidden" id="loginRole" name="role" />
             <label class="hero-field">EMAIL<input id="email" name="email" type="email" autocomplete="username" placeholder="name@institution.edu" required /></label>
@@ -95,6 +96,6 @@
   </section>
 
   <div id="modalRoot"></div>
-  <script src="/app.js?v=20260910-hero"></script>
+  <script src="/app.js?v=20260910-theme2"></script>
 </body>
 </html>
