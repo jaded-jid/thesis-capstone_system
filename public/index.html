@@ -5,63 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#eef2f5" />
   <title>A Thesis and Capstone Defense Scheduling and Panel Management System</title>
-  <link rel="stylesheet" href="/styles.css?v=20260910-profile4" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Sora:wght@200;300;400&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css?v=20260910-hero">
 </head>
 <body>
   <div id="toast" class="toast" aria-live="polite"></div>
 
-  <main id="authRoot" class="auth-shell">
-    <section class="auth-brand-panel">
-      <div class="auth-brand-copy">
-        <p class="micro">THESIS & CAPSTONE</p>
-        <h1>A Thesis and Capstone Defense Scheduling and Panel Management System</h1>
-        <p>One calendar for every thesis defense, panel, and room on campus.</p>
-        <small class="auth-copy-note">Requests, panel assignments, room bookings, and evaluations — tracked in one place, with conflicts caught before they happen.</small>
+  <main id="authRoot" class="hero-auth">
+    <div class="hero-auth__media" aria-hidden="true">
+      <video autoplay muted loop playsinline preload="auto" poster="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260806_132328_5f9029c8-218f-4489-82b6-29ff2849920e.png">
+        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260806_133255_956f653f-5d80-4b06-abd5-0f46c98b60fa.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div class="hero-auth__scrim" aria-hidden="true"></div>
+    <nav class="hero-auth__nav" aria-label="Primary">
+      <a class="hero-auth__logo" href="#" aria-label="Defense Management home">DEFENSE MANAGEMENT</a>
+      <div class="hero-auth__navlinks">
+        <a href="#login">LOGIN</a>
+        <a href="#roles">ROLES</a>
+        <a href="#contact">CONTACT</a>
       </div>
-      <div class="auth-rail">
-        <div><span>01</span><b>One place to coordinate</b><small>Defense requests, schedules, panels, rooms, and results.</small></div>
-        <div><span>02</span><b>Role-based access</b><small>Each account sees only the work relevant to its role.</small></div>
-        <div><span>03</span><b>Clear scheduling controls</b><small>Availability and conflicts are checked before changes are saved.</small></div>
-      </div>
-      <div class="auth-brand-footer">Academic defense scheduling and panel management</div>
-    </section>
-
-    <section class="auth-form-panel">
-      <div class="auth-form-wrap">
-        <div class="mobile-brand brand-lockup">
-          <div><strong>Defense Management</strong><small>Academic Scheduling System</small></div>
-        </div>
-
-        <div id="roleStep" class="auth-step active">
-          <div class="step-heading"><span class="step-index">01</span><div><p class="micro">SIGN IN</p><h2>Select your role</h2></div></div>
-          <p class="helper">Choose the role issued to your account.</p>
-          <div class="role-grid" id="roleGrid">
-            <button class="role-choice" data-role="student"><span class="role-icon student">S</span><span><b>Student</b><small>Submit and monitor defense requests</small></span><i>→</i></button>
-            <button class="role-choice" data-role="adviser"><span class="role-icon adviser">A</span><span><b>Adviser</b><small>Review requests and guide assigned projects</small></span><i>→</i></button>
-            <button class="role-choice" data-role="panel_member"><span class="role-icon panel">P</span><span><b>Panel Member</b><small>Manage assigned defenses and evaluations</small></span><i>→</i></button>
-            <button class="role-choice" data-role="coordinator"><span class="role-icon coordinator">C</span><span><b>Coordinator / Administrator</b><small>Manage the full defense workflow</small></span><i>→</i></button>
+    </nav>
+    <div class="hero-auth__body">
+      <section class="hero-auth__panel" aria-label="System login">
+        <div id="roleStep" class="hero-step active">
+          <div class="hero-chip">[ THESIS / CAPSTONE ]</div>
+          <h1>DEFENSE<br>MANAGEMENT</h1>
+          <p class="hero-tagline">YOUR THESIS &amp; CAPSTONE DEFENSE SCHEDULING SYSTEM.</p>
+          <div class="hero-form-label">SELECT YOUR ROLE</div>
+          <div class="hero-role-list" id="roleGrid">
+            <button class="hero-role" data-role="student"><span>01</span><strong>STUDENT</strong><small>Submit request · view schedule · result</small><i>↗</i></button>
+            <button class="hero-role" data-role="adviser"><span>02</span><strong>ADVISER</strong><small>Assigned students · status · evaluation</small><i>↗</i></button>
+            <button class="hero-role" data-role="panel_member"><span>03</span><strong>PANEL MEMBER</strong><small>Assigned defenses · evaluation · comments</small><i>↗</i></button>
+            <button class="hero-role" data-role="coordinator"><span>04</span><strong>COORDINATOR / ADMINISTRATOR</strong><small>Users · projects · schedules · reports</small><i>↗</i></button>
           </div>
-          <div class="auth-notice"><b>No public registration.</b><span>Accounts are created and managed by the Coordinator / Administrator.</span></div>
+          <p class="hero-note">Accounts are created and managed by the Coordinator / Administrator.</p>
         </div>
 
-        <div id="loginStep" class="auth-step">
-          <button class="back-link" id="changeRole">← Change role</button>
-          <div class="selected-role" id="selectedRole"></div>
-          <div class="step-heading"><span class="step-index">02</span><div><p class="micro">AUTHORIZED ACCESS</p><h2>Sign in to your workspace</h2></div></div>
-          <p class="helper">Use the account credentials issued to you.</p>
-          <form id="loginForm" class="login-form">
+        <div id="loginStep" class="hero-step">
+          <button class="hero-back" id="changeRole" type="button">← CHANGE ROLE</button>
+          <div id="selectedRole" class="hero-chip"></div>
+          <h2>ACCESS YOUR<br>WORKSPACE</h2>
+          <p class="hero-tagline">AUTHORIZED SYSTEM ACCESS.</p>
+          <form id="loginForm" class="hero-login-form" novalidate>
             <input type="hidden" id="loginRole" name="role" />
-            <label>Email address<input id="email" name="email" type="email" autocomplete="username" placeholder="name@institution.edu" required /></label>
-            <label>Password<div class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required /><button type="button" id="togglePassword" aria-label="Show password">Show</button></div></label>
-            <button class="primary-btn" type="submit">Sign in <span>↗</span></button>
+            <label class="hero-field">EMAIL<input id="email" name="email" type="email" autocomplete="username" placeholder="name@institution.edu" required /></label>
+            <label class="hero-field">PASSWORD<div class="hero-password"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required /><button type="button" id="togglePassword" aria-label="Show password">SHOW</button></div></label>
+            <button class="hero-btn hero-btn--solid" type="submit">SIGN IN <span>↗</span></button>
           </form>
-          <div class="login-no-account"><span>Don't have an account?</span><b>Contact your Coordinator / Administrator.</b></div>
+          <p class="hero-note">No public registration. Contact the Coordinator / Administrator for an account.</p>
         </div>
-      </div>
-      <div class="auth-bottom-line">A Thesis and Capstone Defense Scheduling and Panel Management System</div>
-    </section>
+      </section>
+    </div>
+    <footer class="hero-auth__footer" id="contact">
+      Academic scheduling system · Secure role-based access · Thesis &amp; Capstone Defense Management
+    </footer>
   </main>
-
   <section id="appRoot" class="app-shell hidden">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-head">
@@ -96,6 +94,6 @@
   </section>
 
   <div id="modalRoot"></div>
-  <script src="/app.js?v=20260910-profile4"></script>
+  <script src="/app.js?v=20260910-hero"></script>
 </body>
 </html>

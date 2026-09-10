@@ -45,7 +45,7 @@ function avatarMarkup(user, cls='user-table-avatar'){
   const name=esc(user?.full_name||'');
   const initial=esc(initials(user?.full_name||''));
   if(!user?.profile_image) return `<span class="${cls}">${initial}</span>`;
-  return `<span class="${cls} has-image"><img class="profile-clickable" data-profile-full="${esc(user.profile_image)}" src="${esc(user.profile_image)}" alt="${name} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"><span class="avatar-fallback" style="display:none">${initial}</span></span>`;
+  return `<span class="${cls} has-image"><img src="${esc(user.profile_image)}" alt="${name} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"><span class="avatar-fallback" style="display:none">${initial}</span></span>`;
 }
 function setAvatar(el,user){if(!el)return; el.outerHTML=avatarMarkup(user,el.className||'top-avatar');}
 function roleLabel(r){return ROLE[r]?.label||r}
@@ -288,15 +288,6 @@ function openReviewModal(id, approving){
     try{const choice=$('#review-feedback-choice').value;const feedback=choice==='__custom__'?$('#review-custom').value.trim():choice;if(!feedback)throw new Error('Choose or enter feedback before submitting the decision.');await api(`/api/defense-requests/${id}/review`,{method:'PATCH',body:JSON.stringify({status:approving?'Approved':'Returned',feedback})});wrap.remove();toast(approving?'Request approved and scheduled automatically.':'Request returned with feedback.');renderView(state.view);}catch(err){toast(err.message)}};
 }
 
-function openFullProfileImage(src,alt='Profile picture') {
-  if(!src) return;
-  const wrap=document.createElement('div');
-  wrap.className='modal-backdrop image-viewer-backdrop';
-  wrap.id='profileImageViewer';
-  wrap.innerHTML=`<div class="image-viewer"><button class="image-viewer-close" data-close-image-viewer aria-label="Close">×</button><img src="${esc(src)}" alt="${esc(alt)}" onerror="this.closest('#profileImageViewer')?.remove()"></div>`;
-  document.body.appendChild(wrap);
-}
-
 function confirmModal(title,text,yesText,action){const wrap=document.createElement('div');wrap.className='modal-backdrop';wrap.id='modalConfirm';wrap.innerHTML=`<div class="modal"><div class="confirm-box"><div class="confirm-icon">✓</div><h4>${esc(title)}</h4><p>${esc(text)}</p><div class="modal-actions"><button class="btn" data-close-confirm>Cancel</button><button class="btn primary" data-confirm-action="${action}">${esc(yesText)}</button></div></div></div>`;document.body.appendChild(wrap)}
 
 async function showReport(kind){try{const d=await api('/api/reports/'+kind);const rows=d.rows||[];const names={"defense-schedule":'Defense Schedule Report',"panel-assignment":'Panel Assignment Report',"student-status":'Student Status Report',evaluation:'Evaluation Report'};const keys=rows.length?Object.keys(rows[0]):[];$('#reportResult').innerHTML=`<div class="panel-head"><div><h3>${names[kind]||'Report'}</h3><span>${rows.length} record${rows.length===1?'':'s'}</span></div><button class="btn" data-report-export="${kind}">Export CSV</button></div><div class="panel-body table-wrap"><table class="data-table"><thead><tr>${keys.map(k=>`<th>${esc(k.replaceAll('_',' '))}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${keys.map(k=>`<td>${esc(r[k]??'—')}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${Math.max(1,keys.length)}"><div class="empty">No data available.</div></td></tr>`}</tbody></table></div>`;}catch(e){toast(e.message)}}
@@ -311,8 +302,6 @@ $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();try{const
 
 // App actions
 document.addEventListener('click',async e=>{
-  const profileImg=e.target.closest('[data-profile-full]');if(profileImg){e.stopPropagation();openFullProfileImage(profileImg.dataset.profileFull,profileImg.alt||'Profile picture');return;}
-  if(e.target.closest('[data-close-image-viewer]')||e.target.id==='profileImageViewer'){if(e.target.id==='profileImageViewer'||e.target.closest('[data-close-image-viewer]'))$('#profileImageViewer')?.remove();return;}
   const view=e.target.closest('[data-view]')?.dataset.view;if(view){if(window.innerWidth<=1080){$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')}return renderView(view)}
   if(e.target.closest('[data-modal]'))return openModal(e.target.closest('[data-modal]').dataset.modal);
   if(e.target.closest('[data-close-modal]'))return $('#modal')?.remove();
