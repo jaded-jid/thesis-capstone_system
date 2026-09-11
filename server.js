@@ -680,7 +680,8 @@ app.patch('/api/defense-requests/:id/review', auth, requireRole('coordinator'), 
   if (status==='Approved' && scheduleNow) {
     try {
       const schedule = await createAutomaticScheduleForRequest(id);
-      const r=await q("UPDATE defense_requests SET status='Scheduled',review_feedback=$1,updated_at=NOW() WHERE id=$2 RETURNING *",[feedback,id]);
+      const scheduledNote=`Scheduled — ${normalizeDate(schedule.defense_date)} ${String(schedule.start_time).slice(0,5)}.`;
+      const r=await q("UPDATE defense_requests SET status='Scheduled',review_feedback=$1,updated_at=NOW() WHERE id=$2 RETURNING *",[scheduledNote,id]);
       await audit(req.session.user.id,'approve_proceed','defense_request',id,{feedback,schedule_id:schedule.id,scheduled_automatically:true});
       return res.json({ request:r.rows[0], schedule, scheduledAutomatically:true });
     } catch (e) {
@@ -783,7 +784,10 @@ async function saveSchedule(payload, userId, excludeId=null){
   }
   const conflicts=await scheduleConflictsWithClient(client,{projectId,date,start,end,roomId,excludeId}); if(conflicts.length)throw Object.assign(new Error('Conflict detected. Review the student, adviser, panel, room, date/time, or existing schedule before continuing.'),{status:409,conflicts});
   let r; if(excludeId){r=await client.query(`UPDATE schedules SET project_id=$1,request_id=$2,defense_type=$3,defense_date=$4,start_time=$5,end_time=$6,room_id=$7,notes=$8 WHERE id=$9 RETURNING *`,[projectId,resolvedRequestId,type,date,start,end,roomId,notes,excludeId]);if(!r.rowCount)throw Object.assign(new Error('Schedule not found.'),{status:404});} else {r=await client.query(`INSERT INTO schedules(project_id,request_id,defense_type,defense_date,start_time,end_time,room_id,notes) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,[projectId,resolvedRequestId,type,date,start,end,roomId,notes]);}
-  if(resolvedRequestId)await client.query("UPDATE defense_requests SET status='Scheduled',updated_at=NOW() WHERE id=$1 AND status <> 'Completed'",[resolvedRequestId]); return r.rows[0];
+  if(resolvedRequestId){
+    await client.query(`UPDATE defense_requests SET status='Scheduled',review_feedback=$2,updated_at=NOW() WHERE id=$1 AND status <> 'Completed'`,[resolvedRequestId,`Scheduled — ${date} ${start.slice(0,5)}${roomId?' · Room assigned':''}.`]);
+  }
+  return r.rows[0];
  });
 }
 app.post('/api/schedules', auth, requireRole('coordinator'), async(req,res)=>{try{const schedule=await saveSchedule(req.body,req.session.user.id);await audit(req.session.user.id,'create','schedule',schedule.id,{project_id:schedule.project_id});res.status(201).json({schedule});}catch(e){res.status(e.status||500).json({error:e.message||'Unable to save defense schedule.',...(e.conflicts?{conflicts:e.conflicts}:{})});}});

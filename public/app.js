@@ -302,19 +302,16 @@ function openReviewModal(id, approving){
   const wrap=document.createElement('div');wrap.className='modal-backdrop';wrap.id='reviewModal';
   const returnOptions=['Please revise and resubmit','Missing or incomplete requirements','Preferred date/time needs adjustment','Additional adviser/coordinator review required','Other'];
   wrap.innerHTML=`<div class="modal"><div class="modal-head"><div><p class="micro">DEFENSE REQUEST</p><h3>${approving?'Approve request':'Return request'}</h3></div><button class="modal-close" data-close-review>×</button></div><div class="modal-form">
-  ${approving?`<label class="full">Approval action<select id="review-action"><option value="ready">Approved — ready for scheduling</option><option value="proceed">Approved — proceed to defense</option></select></label><label class="full">Feedback / note<select id="review-feedback-choice"><option>Approved — ready for scheduling</option><option>Approved — proceed with defense</option><option>Minor notes</option><option value="__custom__">Custom feedback…</option></select></label>`:`<label class="full">Feedback<select id="review-feedback-choice">${returnOptions.map(o=>`<option>${esc(o)}</option>`).join('')}<option value="__custom__">Custom feedback…</option></select></label>`}
-  <label class="full" id="review-custom-wrap" style="display:none">Additional note<textarea id="review-custom" placeholder="Add specific feedback for the student."></textarea></label>
+  ${approving?`<label class="full">Approval action<select id="review-action"><option value="ready">Approved — ready for scheduling</option><option value="proceed">Approved — proceed to defense</option></select></label><label class="full">Feedback / note<textarea id="review-feedback-text" placeholder="Write the coordinator's feedback or note for the student."></textarea></label>`:`<label class="full">Feedback<textarea id="review-feedback-text" placeholder="Write the reason or feedback for returning this request."></textarea></label>`}
   <div class="full notice"><b>${approving?'Coordinator scheduling control':'Request returned'}</b>${approving?'Choose “ready for scheduling” to leave date/time selection to the Coordinator. Choose “proceed to defense” only when you want the system to automatically create the defense schedule from the student’s preferred date and time. Room and panel assignment remain Coordinator-controlled.':'Returning the request removes it from the review queue and sends the selected feedback back to the student.'}</div>
   <div class="modal-actions"><button class="btn" data-close-review>Cancel</button><button class="btn primary" id="reviewSubmit">${approving?'Approve':'Return Request'}</button></div></div></div>`;
   document.body.appendChild(wrap);
-  const feedbackEl=$('#review-feedback-choice');
-  if(feedbackEl) feedbackEl.onchange=()=>$('#review-custom-wrap').style.display=feedbackEl.value==='__custom__'?'':'none';
+  const feedbackEl=$('#review-feedback-text');
   $('#reviewSubmit').onclick=async()=>{
     try{
       const action=approving?$('#review-action').value:null;
-      const choice=feedbackEl?.value||'';
-      const feedback=choice==='__custom__'?$('#review-custom').value.trim():choice;
-      if(!feedback)throw new Error('Choose or enter feedback before submitting the decision.');
+      const feedback=feedbackEl?.value.trim()||'';
+      if(!feedback)throw new Error('Enter feedback before submitting the decision.');
       const result=await api(`/api/defense-requests/${id}/review`,{method:'PATCH',body:JSON.stringify({status:approving?'Approved':'Returned',feedback,schedule_now:approving&&action==='proceed'})});
       wrap.remove();
       toast(approving?(result.scheduledAutomatically?'Request approved and automatically scheduled.':'Request approved and marked ready for Coordinator scheduling.'):'Request returned with feedback.');
