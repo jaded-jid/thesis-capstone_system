@@ -667,24 +667,32 @@ async function createAutomaticScheduleForRequest(requestId) {
 }
 
 app.patch('/api/defense-requests/:id/review', auth, requireRole('coordinator'), async (req,res) => {
-  const id=Number(req.params.id); const status=String(req.body.status||''); const feedback=cleanText(req.body.feedback,1200);
+  const id=Number(req.params.id);
+  const status=String(req.body.status||'');
+  const feedback=cleanText(req.body.feedback,1200);
+  const scheduleNow=Boolean(req.body.schedule_now);
   if (!['Approved','Returned'].includes(status)) return res.status(400).json({ error:'Choose Approve or Return with Feedback.' });
   if (!feedback) return res.status(400).json({ error:'Choose or enter feedback before submitting the decision.' });
   const request=await q(`SELECT dr.*,p.adviser_id FROM defense_requests dr JOIN projects p ON p.id=dr.project_id WHERE dr.id=$1`,[id]);
   if (!request.rowCount) return res.status(404).json({error:'Request not found.'});
   if (request.rows[0].status !== 'Pending') return res.status(409).json({error:'This defense request has already been reviewed.'});
   if (req.session.user.role==='adviser' && request.rows[0].adviser_id!==req.session.user.id) return res.status(403).json({error:'You can only review requests for your assigned projects.'});
-  if (status==='Approved') {
+  if (status==='Approved' && scheduleNow) {
     try {
       const schedule = await createAutomaticScheduleForRequest(id);
       const r=await q("UPDATE defense_requests SET status='Scheduled',review_feedback=$1,updated_at=NOW() WHERE id=$2 RETURNING *",[feedback,id]);
-      await audit(req.session.user.id,'approve','defense_request',id,{feedback,schedule_id:schedule.id});
+      await audit(req.session.user.id,'approve_proceed','defense_request',id,{feedback,schedule_id:schedule.id,scheduled_automatically:true});
       return res.json({ request:r.rows[0], schedule, scheduledAutomatically:true });
     } catch (e) {
       if (e.code==='SCHEDULE_CONFLICT') return res.status(409).json({error:e.message});
-      console.error('Approve defense request failed:', e);
-      return res.status(500).json({error:'Unable to approve and schedule this defense request. Please verify the requested date/time and try again.'});
+      console.error('Approve/proceed defense request failed:', e);
+      return res.status(500).json({error:'Unable to proceed to defense and create the automatic schedule. Please verify the requested date/time and try again.'});
     }
+  }
+  if (status==='Approved') {
+    const r=await q("UPDATE defense_requests SET status='Approved',review_feedback=$1,updated_at=NOW() WHERE id=$2 RETURNING *",[feedback,id]);
+    await audit(req.session.user.id,'approve_ready','defense_request',id,{feedback,scheduled_automatically:false});
+    return res.json({ request:r.rows[0], scheduledAutomatically:false });
   }
   const r=await q("UPDATE defense_requests SET status='Returned',review_feedback=$1,updated_at=NOW() WHERE id=$2 RETURNING *",[feedback,id]);
   await audit(req.session.user.id,'return','defense_request',id,{feedback});

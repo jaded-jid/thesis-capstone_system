@@ -753,3 +753,44 @@ body:not(.dark-mode) #authRoot .hero-bg-scan{background:linear-gradient(to botto
 
 /* Prevent hover transforms from changing the perceived anchor point on touch devices. */
 @media (hover:none){#authRoot .hero-role:hover{transform:none;}}
+
+/* Final light-theme contrast pass for the cinematic login.  Keep every auth text
+   and control readable above the brightened video/scrim. */
+body:not(.dark-mode) #authRoot,
+body:not(.dark-mode) #authRoot .hero-auth__nav,
+body:not(.dark-mode) #authRoot .hero-auth__body,
+body:not(.dark-mode) #authRoot .hero-auth__footer{color:#17212b!important}
+body:not(.dark-mode) #authRoot .hero-auth__logo,
+body:not(.dark-mode) #authRoot h1,
+body:not(.dark-mode) #authRoot h2,
+body:not(.dark-mode) #authRoot .hero-role-purpose,
+body:not(.dark-mode) #authRoot .hero-form-label,
+body:not(.dark-mode) #authRoot .hero-field,
+body:not(.dark-mode) #authRoot .hero-back,
+body:not(.dark-mode) #authRoot .hero-note,
+body:not(.dark-mode) #authRoot .hero-tagline,
+body:not(.dark-mode) #authRoot .hero-auth__footer{color:#17212b!important;text-shadow:0 1px 0 rgba(255,255,255,.55)}
+body:not(.dark-mode) #authRoot .hero-chip{color:#17212b!important;background:rgba(255,255,255,.88)!important;border-color:rgba(23,33,43,.16)!important}
+body:not(.dark-mode) #authRoot .hero-role{color:#17212b!important;background:rgba(255,255,255,.90)!important;border-color:rgba(23,33,43,.24)!important;box-shadow:0 12px 28px rgba(20,30,40,.10)!important}
+body:not(.dark-mode) #authRoot .hero-role span,
+body:not(.dark-mode) #authRoot .hero-role small{color:#4f5d6a!important}
+body:not(.dark-mode) #authRoot .hero-role i{color:#263441!important}
+body:not(.dark-mode) #authRoot .hero-role strong{color:#17212b!important}
+body:not(.dark-mode) #authRoot .hero-field input{color:#17212b!important;background:rgba(255,255,255,.96)!important;border-bottom-color:rgba(23,33,43,.38)!important;-webkit-text-fill-color:#17212b!important}
+body:not(.dark-mode) #authRoot .hero-field input::placeholder{color:#5d6976!important;opacity:1!important;-webkit-text-fill-color:#5d6976!important}
+body:not(.dark-mode) #authRoot .hero-password button{color:#263441!important}
+body:not(.dark-mode) #authRoot .hero-btn--solid{color:#fff!important;background:#17212b!important}
+body:not(.dark-mode) #authRoot .hero-contact-box{color:#24313d!important;background:rgba(255,255,255,.96)!important;border-color:rgba(23,33,43,.24)!important;box-shadow:0 12px 30px rgba(20,30,40,.08)!important}
+body:not(.dark-mode) #authRoot .hero-contact-box strong{color:#17212b!important}
+body:not(.dark-mode) #authRoot .hero-contact-box__eyebrow,
+body:not(.dark-mode) #authRoot .hero-contact-box small{color:#556371!important}
+body:not(.dark-mode) #authRoot .hero-contact-box p{color:#33424f!important}
+body:not(.dark-mode) #authRoot .hero-auth__scrim{background:linear-gradient(to right,rgba(247,249,251,.55) 0%,rgba(247,249,251,.70) 42%,rgba(247,249,251,.90) 70%,rgba(247,249,251,.97) 100%),linear-gradient(to bottom,rgba(255,255,255,.42),rgba(255,255,255,.20) 45%,rgba(255,255,255,.70) 100%)!important}
+body:not(.dark-mode) #authRoot .hero-auth__media video{filter:brightness(1.14) saturate(.62) contrast(.90)!important}
+body:not(.dark-mode) #authRoot .hero-auth__media::before{opacity:.10!important}
+
+/* Prevent the auth title/role area from being compressed differently by late rules. */
+@media (min-width:901px){
+  #authRoot .hero-auth__panel{align-self:center}
+  #authRoot .hero-step{max-width:620px}
+}
