@@ -45,7 +45,7 @@ function avatarMarkup(user, cls='user-table-avatar'){
   const name=esc(user?.full_name||'');
   const initial=esc(initials(user?.full_name||''));
   if(!user?.profile_image) return `<span class="${cls}">${initial}</span>`;
-  return `<span class="${cls} has-image" data-profile-preview tabindex="0" role="button" aria-label="Preview ${esc(name)} profile picture"><img src="${esc(user.profile_image)}" alt="${name} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"><span class="avatar-fallback" style="display:none">${initial}</span></span>`;
+  return `<span class="${cls} has-image"><img src="${esc(user.profile_image)}" alt="${name} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"><span class="avatar-fallback" style="display:none">${initial}</span></span>`;
 }
 function setAvatar(el,user){if(!el)return; el.outerHTML=avatarMarkup(user,el.className||'top-avatar');}
 function roleLabel(r){return ROLE[r]?.label||r}
@@ -59,7 +59,7 @@ function showApp(){
   setAvatar($('#avatar'), state.user);
   const profileButton=$('#profileButton');
   if(profileButton){ profileButton.onclick=null; profileButton.addEventListener('click', openProfile, {once:false}); }
-  renderNav();renderView('dashboard');bindProfileImagePreview(document);
+  renderNav();renderView('dashboard');
 }
 function renderNav(){
   const nav=$('#nav');nav.innerHTML=(NAV[state.role]||[]).map(item=>item[0]==='group'?`<div class="nav-group">${item[1]}</div>`:`<button class="nav-btn ${state.view===item[0]?'active':''}" data-view="${item[0]}"><span class="nav-icon">${item[2]}</span><span>${item[1]}</span></button>`).join('');
@@ -211,7 +211,7 @@ function openUserEdit(id){
     const wrap=document.createElement('div');wrap.className='modal-backdrop';wrap.id='userEditModal';
     wrap.innerHTML=`<div class="modal profile-modal"><div class="modal-head"><div><p class="micro">ADMINISTRATION</p><h3>Edit user</h3></div><button class="modal-close" data-close-user-edit>×</button></div>
       <form id="userEditForm" class="modal-form">
-        <div class="profile-summary full"><div class="profile-large-avatar" data-profile-preview tabindex="0" role="button" aria-label="Preview profile picture">${u.profile_image?`<img src="/api/users/${u.id}/profile-image?v=${Date.now()}" alt="${esc(u.full_name)} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="avatar-fallback" style="display:none">${esc(initials(u.full_name))}</span>`:esc(initials(u.full_name))}</div><div><b>${esc(roleLabel(u.role))}</b><span>Coordinator-managed account</span></div></div>
+        <div class="profile-summary full"><div class="profile-large-avatar">${u.profile_image?`<img src="/api/users/${u.id}/profile-image?v=${Date.now()}" alt="${esc(u.full_name)} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="avatar-fallback" style="display:none">${esc(initials(u.full_name))}</span>`:esc(initials(u.full_name))}</div><div><b>${esc(roleLabel(u.role))}</b><span>Coordinator-managed account</span></div></div>
         <label>Full name<input id="ue-name" value="${esc(u.full_name)}" required></label>
         <label>Email address<input id="ue-email" type="email" value="${esc(u.email)}" required></label>
         <label>Role<select id="ue-role"><option value="student">Student</option><option value="adviser">Adviser</option><option value="panel_member">Panel Member</option><option value="coordinator">Coordinator / Administrator</option></select></label>
@@ -226,37 +226,13 @@ function openUserEdit(id){
   }).catch(err=>toast(err.message));
 }
 
-function openImagePreview(src, alt='Profile picture'){
-  if(!src) return;
-  const old=$('#imagePreviewModal'); old?.remove();
-  const wrap=document.createElement('div');
-  wrap.className='image-preview-backdrop'; wrap.id='imagePreviewModal';
-  wrap.innerHTML=`<div class="image-preview-dialog" role="dialog" aria-modal="true" aria-label="Profile picture preview"><button type="button" class="image-preview-close" id="closeImagePreview" aria-label="Close preview">×</button><img class="image-preview-image" src="${esc(src)}" alt="${esc(alt)}"></div>`;
-  document.body.appendChild(wrap);
-  const close=()=>wrap.remove();
-  $('#closeImagePreview')?.addEventListener('click',close);
-  wrap.addEventListener('click',e=>{if(e.target===wrap)close()});
-  document.addEventListener('keydown',function onKey(e){if(e.key==='Escape'){close();document.removeEventListener('keydown',onKey)}},{once:true});
-}
-function bindProfileImagePreview(root=document){
-  root.querySelectorAll('[data-profile-preview]').forEach(el=>{
-    if(el.dataset.previewBound) return;
-    el.dataset.previewBound='1';
-    el.addEventListener('click',e=>{
-      e.preventDefault(); e.stopPropagation();
-      const img=el.querySelector('img')||el;
-      if(img?.src) openImagePreview(img.src,img.alt||'Profile picture');
-    });
-  });
-}
-
 function openProfile(){
   const u=state.user;
   const coordinator=state.role==='coordinator';
   const wrap=document.createElement('div');wrap.className='modal-backdrop';wrap.id='profileModal';
   wrap.innerHTML=`<div class="modal profile-modal"><div class="modal-head"><div><p class="micro">ACCOUNT</p><h3>My profile</h3></div><button class="modal-close" data-close-profile>×</button></div>
     <form id="profileForm" class="modal-form">
-      <div class="profile-summary full"><div class="profile-large-avatar" id="profileAvatarPreview" data-profile-preview tabindex="0" role="button" aria-label="Preview profile picture">${u.profile_image?`<img src="${esc(u.profile_image)}" alt="Profile picture"><span class="avatar-fallback" style="display:none">${esc(initials(u.full_name))}</span>`:esc(initials(u.full_name))}</div><div><b>${esc(roleLabel(u.role))}</b><span>${coordinator?'Coordinator accounts can update their own identity details.':'Name and email are managed by the Coordinator / Administrator.'}</span></div></div>
+      <div class="profile-summary full"><div class="profile-large-avatar" id="profileAvatarPreview">${u.profile_image?`<img src="${esc(u.profile_image)}" alt="Profile picture"><span class="avatar-fallback" style="display:none">${esc(initials(u.full_name))}</span>`:esc(initials(u.full_name))}</div><div><b>${esc(roleLabel(u.role))}</b><span>${coordinator?'Coordinator accounts can update their own identity details.':'Name and email are managed by the Coordinator / Administrator.'}</span></div></div>
       <label class="full">Profile picture
         <div class="profile-upload-row">
           <input id="p-image" type="file" accept="image/png,image/jpeg,image/webp">
@@ -428,9 +404,6 @@ applyTheme(localStorage.getItem('defense-theme')||'dark');
 $('#themeToggle')?.addEventListener('click',()=>applyTheme(document.body.classList.contains('dark-mode')?'light':'dark'));
 $('#authThemeLight')?.addEventListener('click',()=>applyTheme('light'));
 $('#authThemeDark')?.addEventListener('click',()=>applyTheme('dark'));
-
-document.addEventListener('click',e=>{const target=e.target.closest?.('[data-profile-preview]');if(target){e.preventDefault();e.stopPropagation();const img=target.querySelector?.('img')||target;if(img?.src)openImagePreview(img.src,img.alt||'Profile picture');}});
-document.addEventListener('keydown',e=>{const target=e.target.closest?.('[data-profile-preview]');if(target&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const img=target.querySelector?.('img')||target;if(img?.src)openImagePreview(img.src,img.alt||'Profile picture');}});
 
 $('#openSidebar').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#scrim').classList.add('show')});$('#closeSidebar').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')});$('#scrim').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')});
 

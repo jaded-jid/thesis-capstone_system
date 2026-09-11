@@ -80,7 +80,17 @@ function validDate(value) {
   return dt.getUTCFullYear()===y && dt.getUTCMonth()===m-1 && dt.getUTCDate()===d;
 }
 function validPositiveInt(value) { return Number.isInteger(Number(value)) && Number(value) > 0; }
-function normalizeDate(value) { return cleanText(value,20).slice(0,10); }
+function normalizeDate(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0,10);
+  }
+  const raw = cleanText(value, 40).trim();
+  // PostgreSQL DATE normally arrives as YYYY-MM-DD, but tolerate Date-like
+  // values from drivers/parsers without turning them into locale strings.
+  const iso = raw.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (iso) return iso[1];
+  return raw.slice(0,10);
+}
 function timeMinutes(value) { const m=String(value||'').match(/^(\d{2}):(\d{2})/); return m ? Number(m[1])*60+Number(m[2]) : null; }
 function validRole(role) {
   return ALLOWED_ROLES.includes(role);
@@ -641,13 +651,16 @@ async function createAutomaticScheduleForRequest(requestId) {
   await client.query('SELECT pg_advisory_xact_lock($1)',[Number(requestId)]);
   const result=await client.query(`SELECT dr.*,p.title,p.type,p.adviser_id,p.student_ids FROM defense_requests dr JOIN projects p ON p.id=dr.project_id WHERE dr.id=$1`,[requestId]);
   if(!result.rowCount) throw new Error('Defense request not found.'); const dr=result.rows[0];
-  const start=String(dr.preferred_time).slice(0,5), duration=Math.max(30,Number(process.env.DEFAULT_DEFENSE_DURATION_MINUTES||120)), end=addMinutesToTime(start,duration);
+  const date=normalizeDate(dr.preferred_date);
+  const start=String(dr.preferred_time ?? '').slice(0,5);
+  const duration=Math.max(30,Number(process.env.DEFAULT_DEFENSE_DURATION_MINUTES||120));
+  const end=addMinutesToTime(start,duration);
   if(!end) throw new Error('The preferred time plus the default defense duration goes past midnight. Choose an earlier time.');
-  if(!validDate(String(dr.preferred_date).slice(0,10))||!validTime(start)) throw new Error('The requested date or time is invalid.');
-  const conflicts=await scheduleConflictsWithClient(client,{projectId:dr.project_id,date:String(dr.preferred_date).slice(0,10),start,end,roomId:null});
+  if(!validDate(date)||!validTime(start)) throw new Error('The requested date or time is invalid.');
+  const conflicts=await scheduleConflictsWithClient(client,{projectId:dr.project_id,date,start,end,roomId:null});
   if(conflicts.length){const error=new Error('The preferred date and time conflicts with another defense, student, adviser, panel, or room schedule. Resolve the conflict before approving this request.');error.code='SCHEDULE_CONFLICT';throw error;}
   const existing=await client.query("SELECT id FROM schedules WHERE request_id=$1 AND status<>'Cancelled' LIMIT 1",[requestId]); if(existing.rowCount) return existing.rows[0];
-  const schedule=await client.query(`INSERT INTO schedules(project_id,request_id,defense_type,defense_date,start_time,end_time,room_id,notes) VALUES($1,$2,$3,$4,$5,$6,NULL,$7) RETURNING *`,[dr.project_id,requestId,dr.defense_type,String(dr.preferred_date).slice(0,10),start,end,'Automatically scheduled from the approved student request. Room and panel assignment pending.']);
+  const schedule=await client.query(`INSERT INTO schedules(project_id,request_id,defense_type,defense_date,start_time,end_time,room_id,notes) VALUES($1,$2,$3,$4,$5,$6,NULL,$7) RETURNING *`,[dr.project_id,requestId,dr.defense_type,date,start,end,'Automatically scheduled from the approved student request. Room and panel assignment pending.']);
   await client.query("UPDATE defense_requests SET status='Scheduled',updated_at=NOW() WHERE id=$1",[requestId]);
   return schedule.rows[0];
  });
@@ -669,7 +682,8 @@ app.patch('/api/defense-requests/:id/review', auth, requireRole('coordinator'), 
       return res.json({ request:r.rows[0], schedule, scheduledAutomatically:true });
     } catch (e) {
       if (e.code==='SCHEDULE_CONFLICT') return res.status(409).json({error:e.message});
-      throw e;
+      console.error('Approve defense request failed:', e);
+      return res.status(500).json({error:'Unable to approve and schedule this defense request. Please verify the requested date/time and try again.'});
     }
   }
   const r=await q("UPDATE defense_requests SET status='Returned',review_feedback=$1,updated_at=NOW() WHERE id=$2 RETURNING *",[feedback,id]);
