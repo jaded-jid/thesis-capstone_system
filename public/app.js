@@ -311,7 +311,7 @@ function openReviewModal(id, approving){
     try{
       const action=approving?$('#review-action').value:null;
       const feedback=feedbackEl?.value.trim()||'';
-      if(!feedback)throw new Error('Enter feedback before submitting the decision.');
+      if(!approving && !feedback)throw new Error('Please enter feedback when returning the request.');
       const result=await api(`/api/defense-requests/${id}/review`,{method:'PATCH',body:JSON.stringify({status:approving?'Approved':'Returned',feedback,schedule_now:approving&&action==='proceed'})});
       wrap.remove();
       toast(approving?(result.scheduledAutomatically?'Request approved and automatically scheduled.':'Request approved and marked ready for Coordinator scheduling.'):'Request returned with feedback.');

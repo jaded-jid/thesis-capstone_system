@@ -672,7 +672,7 @@ app.patch('/api/defense-requests/:id/review', auth, requireRole('coordinator'), 
   const feedback=cleanText(req.body.feedback,1200);
   const scheduleNow=Boolean(req.body.schedule_now);
   if (!['Approved','Returned'].includes(status)) return res.status(400).json({ error:'Choose Approve or Return with Feedback.' });
-  if (!feedback) return res.status(400).json({ error:'Choose or enter feedback before submitting the decision.' });
+  if (status === 'Returned' && !feedback) return res.status(400).json({ error:'Feedback is required when returning a request.' });
   const request=await q(`SELECT dr.*,p.adviser_id FROM defense_requests dr JOIN projects p ON p.id=dr.project_id WHERE dr.id=$1`,[id]);
   if (!request.rowCount) return res.status(404).json({error:'Request not found.'});
   if (request.rows[0].status !== 'Pending') return res.status(409).json({error:'This defense request has already been reviewed.'});
