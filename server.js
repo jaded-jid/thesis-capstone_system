@@ -471,31 +471,31 @@ app.get('/api/students', auth, requireRole('coordinator'), async (_req,res) => {
   res.json({ users:r.rows });
 });
 app.post('/api/users', auth, requireRole('coordinator'), async (req,res) => {
-  const name=cleanText(req.body.full_name,120), email=cleanEmail(req.body.email), password=String(req.body.password||''), role=cleanText(req.body.role,40), availability=cleanText(req.body.panel_availability,1000);
+  const name=cleanText(req.body.full_name,120), email=cleanEmail(req.body.email), password=String(req.body.password||''), role=cleanText(req.body.role,40);
   if (!name || !email || password.length < 8 || !validRole(role)) return res.status(400).json({ error:'Provide a name, valid email, role, and password of at least 8 characters.' });
   const exists=await q('SELECT id FROM users WHERE lower(email)=lower($1)',[email]);
   if (exists.rowCount) return res.status(409).json({ error:'An account with this email already exists.' });
   const hash=await bcrypt.hash(password,12);
-  const r=await q('INSERT INTO users(full_name,email,password_hash,role,panel_availability) VALUES($1,$2,$3,$4,$5) RETURNING id,full_name,email,role,is_active,created_at,panel_availability',[name,email,hash,role,availability||null]);
+  const r=await q('INSERT INTO users(full_name,email,password_hash,role) VALUES($1,$2,$3,$4) RETURNING id,full_name,email,role,is_active,created_at,panel_availability',[name,email,hash,role]);
   await audit(req.session.user.id,'create','user',r.rows[0].id,{role});
   res.status(201).json({ user:r.rows[0] });
 });
 app.patch('/api/profile', auth, async (req,res) => {
   try {
     const id = req.session.user.id;
-    const existing = await q('SELECT id,full_name,email,password_hash,role,is_active,panel_availability,profile_image FROM users WHERE id=$1',[id]);
+    const existing = await q('SELECT id,full_name,email,password_hash,role,is_active,profile_image FROM users WHERE id=$1',[id]);
     if (!existing.rowCount) return res.status(404).json({ error:'Account not found.' });
     const current = existing.rows[0];
     const isCoordinator = current.role==='coordinator';
-    const name = isCoordinator ? cleanText(req.body.full_name,120) : current.full_name;
-    const email = isCoordinator ? cleanEmail(req.body.email) : current.email;
+    const name = isCoordinator && req.body.full_name !== undefined ? cleanText(req.body.full_name,120) : current.full_name;
+    const email = isCoordinator && req.body.email !== undefined ? cleanEmail(req.body.email) : current.email;
     const currentPassword = String(req.body.current_password || '');
     const newPassword = String(req.body.new_password || '');
     const profileImage = req.body.profile_image === undefined ? current.profile_image : (req.body.profile_image ? String(req.body.profile_image) : null);
     if (profileImage && (!/^data:image\/(png|jpeg|jpg|webp);base64,[A-Za-z0-9+/=]+$/.test(profileImage) || profileImage.length > 850000)) return res.status(400).json({ error:'Profile image must be a PNG, JPG, or WebP image under 600 KB.' });
     if (!name || !email) return res.status(400).json({ error:'Name and email are required.' });
     if (isCoordinator) {
-      const exists = await q('SELECT id FROM users WHERE lower(email)=lower($1) AND id<>$2',[email,id]);
+      const exists = await q('SELECT id FROM users WHERE lower(trim(email))=lower(trim($1)) AND id<>$2',[email,id]);
       if (exists.rowCount) return res.status(409).json({ error:'That email address is already in use.' });
     }
     let hash = current.password_hash;
@@ -507,9 +507,14 @@ app.patch('/api/profile', auth, async (req,res) => {
       hash = await bcrypt.hash(newPassword,12);
     }
     const r = await q('UPDATE users SET full_name=$1,email=$2,password_hash=$3,profile_image=$4,updated_at=NOW() WHERE id=$5 RETURNING id,full_name,email,role,is_active,profile_image',[name,email,hash,profileImage,id]);
+    if (!r.rowCount) return res.status(404).json({ error:'Account could not be updated.' });
     req.session.user = serializeUser(r.rows[0]);
     res.json({ user:req.session.user });
-  } catch (e) { console.error(e); res.status(500).json({ error:'Unable to update profile.' }); }
+  } catch (e) {
+    console.error('Profile update failed:', e);
+    if (e?.code === '23505') return res.status(409).json({ error:'That email address is already in use.' });
+    res.status(500).json({ error:'Unable to update profile. Please try again.' });
+  }
 });
 
 app.patch('/api/users/:id', auth, requireRole('coordinator'), async (req,res) => {
@@ -519,13 +524,13 @@ app.patch('/api/users/:id', auth, requireRole('coordinator'), async (req,res) =>
     const target=await q('SELECT id,full_name,email,password_hash,role,is_active,panel_availability,profile_image FROM users WHERE id=$1',[id]);
     if(!target.rowCount)return res.status(404).json({error:'User not found.'});
     const user=target.rows[0];
-    const name=cleanText(req.body.full_name,120), email=cleanEmail(req.body.email), password=String(req.body.password||''), availability=cleanText(req.body.panel_availability,1000), role=cleanText(req.body.role,40);
+    const name=cleanText(req.body.full_name,120), email=cleanEmail(req.body.email), password=String(req.body.password||''), role=cleanText(req.body.role,40);
     if(!name||!email||!validRole(role))return res.status(400).json({error:'Name and email are required.'});
     const exists=await q('SELECT id FROM users WHERE lower(email)=lower($1) AND id<>$2',[email,id]);
     if(exists.rowCount)return res.status(409).json({error:'That email address is already in use.'});
     let hash=user.password_hash;
     if(password){if(password.length<8)return res.status(400).json({error:'New password must be at least 8 characters.'});hash=await bcrypt.hash(password,12);}
-    const r=await q('UPDATE users SET full_name=$1,email=$2,password_hash=$3,panel_availability=$4,role=$5,updated_at=NOW() WHERE id=$6 RETURNING id,full_name,email,role,is_active,created_at,panel_availability,profile_image',[name,email,hash,availability||null,role,id]);
+    const r=await q('UPDATE users SET full_name=$1,email=$2,password_hash=$3,role=$4,updated_at=NOW() WHERE id=$5 RETURNING id,full_name,email,role,is_active,created_at,panel_availability,profile_image',[name,email,hash,role,id]);
     await audit(req.session.user.id,'update','user',id,{});
     res.json({user:r.rows[0]});
   } catch(e){console.error(e);res.status(500).json({error:'Unable to update user account.'});}

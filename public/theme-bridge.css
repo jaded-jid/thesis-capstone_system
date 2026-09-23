@@ -1,0 +1,734 @@
+/* =====================================================================
+   THEME BRIDGE — keeps the Linear-inspired UI usable in BOTH light/dark.
+   The application already owns the theme state via body.dark-mode.
+   ===================================================================== */
+
+/* ---------- shared shell / viewport ---------- */
+html, body { min-height: 100%; }
+body:has(#appRoot:not(.hidden)) { overflow: hidden; }
+#appRoot:not(.hidden) {
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+}
+#appRoot:not(.hidden) > .workspace {
+  height: 100dvh !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+#appRoot:not(.hidden) > .workspace > .content {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+}
+
+/* Sidebar is a stable frame; only the nav list may scroll. */
+#sidebar.sidebar {
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+}
+#sidebar .sidebar-head,
+#sidebar .identity-card,
+#sidebar .sidebar-foot { flex: 0 0 auto !important; }
+#sidebar .nav { min-height: 0 !important; flex: 1 1 auto !important; overflow-y: auto !important; }
+
+/* ---------- theme tokens ---------- */
+body:not(.dark-mode) {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --ink: #171a22;
+  --muted: #6b7280;
+  --line: #e2e6ec;
+  --accent: #5E6AD2;
+  --accent2: #6872D9;
+  --deep: #11131a;
+  --deep2: #181b24;
+  --shadow: 0 0 0 1px rgba(16,24,40,.05), 0 10px 30px rgba(16,24,40,.06);
+  --role-accent: #5E6AD2;
+  --role-accent-soft: rgba(94,106,210,.10);
+  --role-accent-border: rgba(94,106,210,.26);
+  --role-deep: #4b55b2;
+}
+
+body.dark-mode {
+  --bg: #08090c;
+  --surface: #111319;
+  --ink: #EDEDEF;
+  --muted: #8A8F98;
+  --line: rgba(255,255,255,.08);
+  --accent: #5E6AD2;
+  --accent2: #6872D9;
+  --deep: #050506;
+  --deep2: #0a0a0c;
+  --shadow: 0 0 0 1px rgba(255,255,255,.06), 0 10px 32px rgba(0,0,0,.34);
+  --role-accent: #5E6AD2;
+  --role-accent-soft: rgba(94,106,210,.12);
+  --role-accent-border: rgba(94,106,210,.30);
+  --role-deep: #C8CCFF;
+}
+
+/* ---------- header / theme control ---------- */
+.theme-toggle {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  box-shadow: var(--shadow) !important;
+}
+.theme-toggle:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  transform: translateY(-1px);
+}
+.theme-toggle-icon { color: var(--accent) !important; }
+body:not(.dark-mode) .topbar {
+  background: rgba(255,255,255,.88) !important;
+  border-bottom-color: #e2e6ec !important;
+}
+body.dark-mode .topbar {
+  background: rgba(14,15,20,.88) !important;
+  border-bottom-color: rgba(255,255,255,.07) !important;
+}
+
+/* ---------- light-mode readability ---------- */
+body:not(.dark-mode) .workspace { background: var(--bg) !important; color: var(--ink) !important; }
+body:not(.dark-mode) .content { background: var(--bg) !important; }
+body:not(.dark-mode) .page-intro h2,
+body:not(.dark-mode) .topbar h1,
+body:not(.dark-mode) .panel-head h3,
+body:not(.dark-mode) .project-title,
+body:not(.dark-mode) .stat-card strong,
+body:not(.dark-mode) .timeline-main b,
+body:not(.dark-mode) .request-main b { color: var(--ink) !important; }
+body:not(.dark-mode) .page-intro p,
+body:not(.dark-mode) .panel-head span,
+body:not(.dark-mode) .muted,
+body:not(.dark-mode) .stat-card small,
+body:not(.dark-mode) .stat-card em,
+body:not(.dark-mode) .timeline-main small,
+body:not(.dark-mode) .request-main small,
+body:not(.dark-mode) .date-chip { color: var(--muted) !important; }
+
+body:not(.dark-mode) .panel,
+body:not(.dark-mode) .stat-card,
+body:not(.dark-mode) .modal,
+body:not(.dark-mode) .btn,
+body:not(.dark-mode) .project-card,
+body:not(.dark-mode) .report-card {
+  background: #fff !important;
+  color: var(--ink) !important;
+  border-color: #e2e6ec !important;
+  box-shadow: 0 0 0 1px rgba(16,24,40,.03), 0 10px 28px rgba(16,24,40,.055) !important;
+}
+body:not(.dark-mode) .panel-head { background: #fff !important; border-bottom-color: #e7eaf0 !important; }
+body:not(.dark-mode) .panel-head::before { opacity: 1; }
+body:not(.dark-mode) .data-table th {
+  background: #f7f8fa !important;
+  color: #707887 !important;
+  border-bottom-color: #e1e5ea !important;
+}
+body:not(.dark-mode) .data-table td { color: #272b33 !important; border-bottom-color: #edf0f3 !important; }
+body:not(.dark-mode) .data-table td:first-child { color: #535fc2 !important; }
+body:not(.dark-mode) .data-table td:nth-child(3) { color: #6f7785 !important; }
+body:not(.dark-mode) .data-table tbody tr:hover { background: rgba(94,106,210,.045) !important; }
+body:not(.dark-mode) .chip { background: #f1f3f6 !important; color: #606878 !important; }
+body:not(.dark-mode) .btn.primary { background: #5E6AD2 !important; border-color: #5E6AD2 !important; color: #fff !important; }
+body:not(.dark-mode) .btn.purple { background: #eef0ff !important; border-color: #dfe3ff !important; color: #515dbf !important; }
+body:not(.dark-mode) .status.planned { background: #f0f2f5 !important; color: #687180 !important; }
+body:not(.dark-mode) .flow-wrap { background: #f7f8fa !important; }
+body:not(.dark-mode) .notice { background: #fff9ec !important; border-color: #f0dfb8 !important; color: #665b43 !important; }
+body:not(.dark-mode) .modal-backdrop { background: rgba(17,20,27,.42) !important; backdrop-filter: blur(8px); }
+body:not(.dark-mode) .modal-form input,
+body:not(.dark-mode) .modal-form textarea,
+body:not(.dark-mode) .modal-form select,
+body:not(.dark-mode) .search-input,
+body:not(.dark-mode) .status-select {
+  background: #fff !important;
+  color: #20242c !important;
+  border-color: #dfe4ea !important;
+}
+body:not(.dark-mode) .modal-form input::placeholder,
+body:not(.dark-mode) .modal-form textarea::placeholder { color: #9299a5 !important; }
+body:not(.dark-mode) .table-wrap,
+body:not(.dark-mode) .data-scroll,
+body:not(.dark-mode) .records-scroll { scrollbar-color: #c8ced8 transparent !important; }
+
+/* ---------- dark-mode readability ---------- */
+body.dark-mode .workspace { background: #08090c !important; color: #EDEDEF !important; }
+body.dark-mode .content { background: #08090c !important; }
+body.dark-mode .panel,
+body.dark-mode .stat-card,
+body.dark-mode .modal,
+body.dark-mode .btn,
+body.dark-mode .project-card,
+body.dark-mode .report-card {
+  background: #111319 !important;
+  color: #EDEDEF !important;
+  border-color: rgba(255,255,255,.07) !important;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.035), 0 10px 30px rgba(0,0,0,.32) !important;
+}
+body.dark-mode .panel-head { background:#111319 !important; border-bottom-color: rgba(255,255,255,.06) !important; }
+body.dark-mode .data-table th { background:#0d0f14 !important; color:#89909d !important; border-color:rgba(255,255,255,.07) !important; }
+body.dark-mode .data-table td { color:#e5e7eb !important; border-color:rgba(255,255,255,.06) !important; }
+body.dark-mode .data-table td:first-child { color:#AEB5FF !important; }
+body.dark-mode .data-table td:nth-child(3) { color:#9ca3af !important; }
+body.dark-mode .data-table tbody tr:hover { background:rgba(94,106,210,.06) !important; }
+
+/* ---------- project plan cleanup ---------- */
+.management-wbs .table-wrap {
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0 18px 18px !important;
+}
+.management-wbs .data-table {
+  min-width: 0 !important;
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+.management-wbs .data-table thead th {
+  position: static !important;
+  top: auto !important;
+  z-index: auto !important;
+  backdrop-filter: none !important;
+}
+.management-wbs .data-table thead th:first-child { border-top-left-radius: 10px; }
+.management-wbs .data-table thead th:last-child { border-top-right-radius: 10px; }
+.management-wbs .data-table td { padding-top: 13px !important; padding-bottom: 13px !important; }
+.management-wbs .data-table tbody tr:last-child td { border-bottom: 0 !important; }
+.management-wbs .panel-head { padding-bottom: 15px !important; }
+.management-wbs .panel-head h3 { font-size: 16px !important; }
+.management-wbs .panel-head span { font-size: 11px !important; }
+
+@media (max-width: 900px) {
+  .management-wbs .table-wrap { overflow-x: auto !important; }
+  .management-wbs .data-table { min-width: 720px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle:hover { transform: none; }
+}
+
+/* ================================================================
+   FINAL READABILITY + MODAL ACTIONS PATCH
+   Keeps role colors, restores readable typography in both themes,
+   and keeps schedule/panel save actions reachable.
+   ================================================================ */
+
+/* ---------- global light-mode text ---------- */
+body:not(.dark-mode) {
+  color: #20242c !important;
+}
+body:not(.dark-mode) .topbar,
+body:not(.dark-mode) .content,
+body:not(.dark-mode) .page-intro,
+body:not(.dark-mode) .panel,
+body:not(.dark-mode) .stat-card,
+body:not(.dark-mode) .modal {
+  color: #20242c !important;
+}
+body:not(.dark-mode) .topbar h1,
+body:not(.dark-mode) .page-intro h2,
+body:not(.dark-mode) .panel-head h3,
+body:not(.dark-mode) .stat-card strong,
+body:not(.dark-mode) .project-title,
+body:not(.dark-mode) .modal-head h3,
+body:not(.dark-mode) .modal-form label,
+body:not(.dark-mode) .modal-form .notice b {
+  color: #20242c !important;
+}
+body:not(.dark-mode) .page-intro p,
+body:not(.dark-mode) .panel-head span,
+body:not(.dark-mode) .stat-card small,
+body:not(.dark-mode) .stat-card em,
+body:not(.dark-mode) .muted,
+body:not(.dark-mode) .timeline-date,
+body:not(.dark-mode) .timeline-main small,
+body:not(.dark-mode) .request-main small,
+body:not(.dark-mode) .mini-row small,
+body:not(.dark-mode) .date-chip,
+body:not(.dark-mode) .field-note,
+body:not(.dark-mode) .modal .micro,
+body:not(.dark-mode) .modal .muted {
+  color: #667085 !important;
+}
+body:not(.dark-mode) .modal-form input,
+body:not(.dark-mode) .modal-form select,
+body:not(.dark-mode) .modal-form textarea,
+body:not(.dark-mode) .search-input,
+body:not(.dark-mode) .status-select {
+  color: #20242c !important;
+  -webkit-text-fill-color: #20242c !important;
+}
+body:not(.dark-mode) .modal-form input::placeholder,
+body:not(.dark-mode) .modal-form textarea::placeholder,
+body:not(.dark-mode) .search-input::placeholder {
+  color: #8a94a3 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #8a94a3 !important;
+}
+body:not(.dark-mode) .modal-close {
+  color: #4b5563 !important;
+  background: #f1f3f6 !important;
+}
+body:not(.dark-mode) .modal-actions .btn:not(.primary) {
+  color: #374151 !important;
+  background: #fff !important;
+}
+
+/* ---------- global dark-mode text ---------- */
+body.dark-mode,
+body.dark-mode .topbar,
+body.dark-mode .content,
+body.dark-mode .page-intro,
+body.dark-mode .panel,
+body.dark-mode .stat-card,
+body.dark-mode .modal {
+  color: #eef1f5 !important;
+}
+body.dark-mode .topbar h1,
+body.dark-mode .page-intro h2,
+body.dark-mode .panel-head h3,
+body.dark-mode .stat-card strong,
+body.dark-mode .project-title,
+body.dark-mode .modal-head h3,
+body.dark-mode .modal-form label,
+body.dark-mode .modal-form .notice b {
+  color: #eef1f5 !important;
+}
+body.dark-mode .page-intro p,
+body.dark-mode .panel-head span,
+body.dark-mode .stat-card small,
+body.dark-mode .stat-card em,
+body.dark-mode .muted,
+body.dark-mode .timeline-date,
+body.dark-mode .timeline-main small,
+body.dark-mode .request-main small,
+body.dark-mode .mini-row small,
+body.dark-mode .date-chip,
+body.dark-mode .field-note,
+body.dark-mode .modal .micro,
+body.dark-mode .modal .muted {
+  color: #a5adba !important;
+}
+body.dark-mode .modal-form input,
+body.dark-mode .modal-form select,
+body.dark-mode .modal-form textarea,
+body.dark-mode .search-input,
+body.dark-mode .status-select {
+  color: #eef1f5 !important;
+  -webkit-text-fill-color: #eef1f5 !important;
+  background: #11151b !important;
+  border-color: #303744 !important;
+}
+body.dark-mode .modal-form input::placeholder,
+body.dark-mode .modal-form textarea::placeholder,
+body.dark-mode .search-input::placeholder {
+  color: #778190 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #778190 !important;
+}
+body.dark-mode .modal-close {
+  color: #e5e7eb !important;
+  background: #252b35 !important;
+}
+body.dark-mode .modal-actions .btn:not(.primary) {
+  color: #e5e7eb !important;
+  background: #171b22 !important;
+  border-color: #303744 !important;
+}
+
+/* ---------- role colors for ALL primary actions in both themes ---------- */
+body.theme-student .btn.primary { background:#3FA968 !important; border-color:#3FA968 !important; color:#fff !important; }
+body.theme-adviser .btn.primary { background:#4C8ED8 !important; border-color:#4C8ED8 !important; color:#fff !important; }
+body.theme-panel .btn.primary { background:#A97955 !important; border-color:#A97955 !important; color:#fff !important; }
+body.theme-coordinator .btn.primary { background:#D45A57 !important; border-color:#D45A57 !important; color:#fff !important; }
+body.theme-student .btn.primary:hover { background:#55BE7B !important; }
+body.theme-adviser .btn.primary:hover { background:#63A1EA !important; }
+body.theme-panel .btn.primary:hover { background:#BE916B !important; }
+body.theme-coordinator .btn.primary:hover { background:#E66D69 !important; }
+
+/* ---------- modal layout: never hide Save / Create / Assign actions ---------- */
+.modal-backdrop {
+  padding: max(12px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom)) !important;
+}
+.modal {
+  display:flex !important;
+  flex-direction:column !important;
+  width:min(720px,100%) !important;
+  max-height:calc(100dvh - 24px) !important;
+  overflow:hidden !important;
+}
+.modal-head { flex:0 0 auto !important; }
+.modal > .modal-form:not(:has(.modal-actions)) {
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  overflow:auto !important;
+  overscroll-behavior:contain;
+}
+.modal > .modal-form:has(.modal-actions) {
+  flex:0 0 auto !important;
+}
+.modal-form .modal-actions {
+  position:sticky !important;
+  bottom:0 !important;
+  z-index:20 !important;
+  background:var(--surface,#fff) !important;
+  border-top:1px solid var(--line) !important;
+  margin:4px -20px -20px !important;
+  padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px)) !important;
+  box-shadow:0 -8px 18px rgba(16,24,40,.05) !important;
+}
+
+/* Single-form schedule modals: their fields scroll while actions remain visible. */
+.modal:has(#se-project) .modal-form,
+.modal:has(#rq-project) .modal-form {
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  overflow:auto !important;
+  overscroll-behavior:contain;
+}
+.modal:has(#se-project) .modal-actions,
+.modal:has(#rq-project) .modal-actions {
+  position:sticky !important;
+  bottom:0 !important;
+  z-index:20 !important;
+}
+
+/* Add Schedule / Assign Panel have a scrollable body and fixed action strip. */
+.modal:has(#f-schedule-project) > .modal-form:first-of-type,
+.modal:has(#f-panel-project) > .modal-form:first-of-type {
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  overflow:auto !important;
+}
+.modal:has(#f-schedule-project) > .modal-form:last-of-type,
+.modal:has(#f-panel-project) > .modal-form:last-of-type {
+  flex:0 0 auto !important;
+}
+
+/* Make action buttons impossible to blend into the footer. */
+.modal-actions .btn {
+  min-height:44px !important;
+  min-width:96px;
+  font-weight:800 !important;
+}
+body:not(.dark-mode) .modal-actions { background:#fff !important; }
+body.dark-mode .modal-actions { background:#111319 !important; box-shadow:0 -8px 18px rgba(0,0,0,.25) !important; border-color:#303744 !important; }
+
+@media(max-width:640px){
+  .modal-backdrop { padding:8px !important; }
+  .modal { max-height:calc(100dvh - 16px) !important; border-radius:16px !important; }
+  .modal-form { padding:16px !important; grid-template-columns:1fr !important; }
+  .modal-form .full { grid-column:auto !important; }
+  .modal-form .modal-actions { margin-left:-16px !important; margin-right:-16px !important; margin-bottom:-16px !important; padding-left:16px !important; padding-right:16px !important; flex-wrap:wrap; }
+  .modal-actions .btn { flex:1 1 140px; }
+}
+
+/* ================================================================
+   FINAL LIGHT READABILITY + LOGIN ROLE COLORS
+   Last-loaded patch: fixes remaining low-contrast text in light mode
+   and keeps role identity colors on the login role selector in both themes.
+   ================================================================ */
+
+/* ---- Light theme: force readable text across the application content ---- */
+body:not(.dark-mode) #appRoot .content {
+  color: #20242c !important;
+}
+body:not(.dark-mode) #appRoot .content :where(h1,h2,h3,h4,h5,h6,p,span,small,label,th,td,b,strong,li,dt,dd,a) {
+  color: #20242c !important;
+}
+body:not(.dark-mode) #appRoot .content :where(.muted,.hint,.micro,.field-note,.panel-head span,.page-intro p,.stat-card small,.stat-card em,.timeline-date,.timeline-main small,.request-main small,.mini-row small,.date-chip,.empty) {
+  color: #667085 !important;
+}
+body:not(.dark-mode) #appRoot .content :where(.status,.chip,.tag) {
+  color: inherit !important;
+}
+body:not(.dark-mode) #appRoot .content :where(.btn,.theme-toggle) {
+  color: #20242c !important;
+}
+body:not(.dark-mode) #appRoot .content :where(.btn.primary,.btn.danger-btn) {
+  color: #fff !important;
+}
+body:not(.dark-mode) #appRoot .content :where(input,select,textarea) {
+  color: #20242c !important;
+  -webkit-text-fill-color: #20242c !important;
+  background: #fff !important;
+}
+body:not(.dark-mode) #appRoot .content :where(input::placeholder,textarea::placeholder) {
+  color: #8a94a3 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #8a94a3 !important;
+}
+body:not(.dark-mode) #appRoot .content :where(.data-table a,.row-click a) {
+  color: #3447a8 !important;
+}
+body:not(.dark-mode) #appRoot .content :where(.data-table td:first-child,.project-title) {
+  color: #3447a8 !important;
+}
+
+/* Restore semantic/state colors after the broad light-mode readability rule. */
+body:not(.dark-mode) #appRoot .content .role-label-student { color: var(--student-role) !important; }
+body:not(.dark-mode) #appRoot .content .role-label-adviser { color: var(--adviser-role) !important; }
+body:not(.dark-mode) #appRoot .content .role-label-panel_member { color: var(--panel-role) !important; }
+body:not(.dark-mode) #appRoot .content .role-label-coordinator { color: var(--coordinator-role) !important; }
+body:not(.dark-mode) #appRoot .content .role-summary-student,
+body:not(.dark-mode) #appRoot .content .role-summary-student b { color: var(--student-role) !important; }
+body:not(.dark-mode) #appRoot .content .role-summary-adviser,
+body:not(.dark-mode) #appRoot .content .role-summary-adviser b { color: var(--adviser-role) !important; }
+body:not(.dark-mode) #appRoot .content .role-summary-panel_member,
+body:not(.dark-mode) #appRoot .content .role-summary-panel_member b { color: var(--panel-role) !important; }
+body:not(.dark-mode) #appRoot .content .role-summary-coordinator,
+body:not(.dark-mode) #appRoot .content .role-summary-coordinator b { color: var(--coordinator-role) !important; }
+
+/* ---- Login role selector: exact role colors in BOTH light and dark themes ---- */
+#authRoot .hero-role[data-role="student"] {
+  border-left: 3px solid var(--student-role) !important;
+}
+#authRoot .hero-role[data-role="student"] strong,
+#authRoot .hero-role[data-role="student"] span,
+#authRoot .hero-role[data-role="student"] i {
+  color: var(--student-role) !important;
+}
+#authRoot .hero-role[data-role="adviser"] {
+  border-left: 3px solid var(--adviser-role) !important;
+}
+#authRoot .hero-role[data-role="adviser"] strong,
+#authRoot .hero-role[data-role="adviser"] span,
+#authRoot .hero-role[data-role="adviser"] i {
+  color: var(--adviser-role) !important;
+}
+#authRoot .hero-role[data-role="panel_member"] {
+  border-left: 3px solid var(--panel-role) !important;
+}
+#authRoot .hero-role[data-role="panel_member"] strong,
+#authRoot .hero-role[data-role="panel_member"] span,
+#authRoot .hero-role[data-role="panel_member"] i {
+  color: var(--panel-role) !important;
+}
+#authRoot .hero-role[data-role="coordinator"] {
+  border-left: 3px solid var(--coordinator-role) !important;
+}
+#authRoot .hero-role[data-role="coordinator"] strong,
+#authRoot .hero-role[data-role="coordinator"] span,
+#authRoot .hero-role[data-role="coordinator"] i {
+  color: var(--coordinator-role) !important;
+}
+
+/* Keep role descriptions readable without replacing the role heading color. */
+#authRoot .hero-role small { color: var(--hero-dim) !important; }
+body:not(.dark-mode) #authRoot .hero-role small { color: #5e6b78 !important; }
+body.dark-mode #authRoot .hero-role small { color: rgba(255,255,255,.62) !important; }
+
+/* Selected role keeps its own identity while receiving a subtle background. */
+#authRoot .hero-role[data-role="student"].selected { background: rgba(47,138,85,.10) !important; border-color: rgba(47,138,85,.42) !important; }
+#authRoot .hero-role[data-role="adviser"].selected { background: rgba(57,116,185,.10) !important; border-color: rgba(57,116,185,.42) !important; }
+#authRoot .hero-role[data-role="panel_member"].selected { background: rgba(138,90,57,.10) !important; border-color: rgba(138,90,57,.42) !important; }
+#authRoot .hero-role[data-role="coordinator"].selected { background: rgba(181,68,65,.10) !important; border-color: rgba(181,68,65,.42) !important; }
+
+/* Stronger focus visibility for every login role in both themes. */
+#authRoot .hero-role:focus-visible { outline: 2px solid currentColor !important; outline-offset: 2px; }
+
+
+/* FINAL PROFILE MODAL ACTION-BAR FIX
+   The generic modal rule matches forms that contain .modal-actions and can
+   force the whole profile form to flex:0 auto. Override it with a more
+   specific selector so the profile form fills the dialog, while the form
+   fields scroll and the action bar remains permanently visible. */
+.modal.profile-modal > form.profile-edit-form {
+  display:flex !important;
+  flex:1 1 0 !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow:hidden !important;
+  padding:0 !important;
+}
+.modal.profile-modal > form.profile-edit-form > .profile-form-scroll {
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain !important;
+  padding:20px !important;
+}
+.modal.profile-modal > form.profile-edit-form > .modal-actions {
+  flex:0 0 auto !important;
+  position:relative !important;
+  bottom:auto !important;
+  z-index:30 !important;
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  min-height:72px !important;
+  box-sizing:border-box !important;
+  margin:0 !important;
+  padding:14px 20px calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+  background:var(--surface,#fff) !important;
+  border-top:1px solid var(--line) !important;
+}
+.modal.profile-modal > form.profile-edit-form > .modal-actions .btn {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  min-height:44px !important;
+}
+body:not(.dark-mode) .modal.profile-modal > form.profile-edit-form > .modal-actions {
+  background:#fff !important;
+  color:#20242c !important;
+  border-top-color:#d9dee6 !important;
+}
+body.dark-mode .modal.profile-modal > form.profile-edit-form > .modal-actions {
+  background:#111319 !important;
+  color:#EDEDEF !important;
+  border-top-color:#303744 !important;
+}
+@media (max-width:640px) {
+  .modal.profile-modal {
+    width:calc(100vw - 16px) !important;
+    height:calc(100dvh - 16px) !important;
+    max-height:calc(100dvh - 16px) !important;
+  }
+  .modal.profile-modal > form.profile-edit-form > .profile-form-scroll {
+    grid-template-columns:1fr !important;
+    padding:16px !important;
+  }
+  .modal.profile-modal > form.profile-edit-form > .modal-actions {
+    padding-left:16px !important;
+    padding-right:16px !important;
+    flex-wrap:wrap !important;
+  }
+  .modal.profile-modal > form.profile-edit-form > .modal-actions .btn {
+    flex:1 1 140px !important;
+  }
+}
+
+/* =====================================================================
+   FINAL LIGHT-THEME ACTION BUTTON VISIBILITY FIX
+   Keep all contextual actions readable in Rooms, Panel Assignment,
+   Projects, Schedules, and User Management.
+   ===================================================================== */
+body:not(.dark-mode) #appRoot .content .btn:not(.primary):not(.danger-btn),
+body:not(.dark-mode) #appRoot .content .table-actions .btn:not(.primary):not(.danger-btn),
+body:not(.dark-mode) #appRoot .content .data-table td .btn:not(.primary):not(.danger-btn),
+body:not(.dark-mode) #appRoot .content .project-card .btn:not(.primary):not(.danger-btn) {
+  color: #26313f !important;
+  background: #ffffff !important;
+  border-color: #d7dde6 !important;
+  -webkit-text-fill-color: #26313f !important;
+  text-shadow: none !important;
+}
+body:not(.dark-mode) #appRoot .content .btn:not(.primary):not(.danger-btn):hover,
+body:not(.dark-mode) #appRoot .content .table-actions .btn:not(.primary):not(.danger-btn):hover,
+body:not(.dark-mode) #appRoot .content .data-table td .btn:not(.primary):not(.danger-btn):hover,
+body:not(.dark-mode) #appRoot .content .project-card .btn:not(.primary):not(.danger-btn):hover {
+  color: #20242c !important;
+  background: #f4f6f8 !important;
+  border-color: #bfc7d3 !important;
+}
+body:not(.dark-mode) #appRoot .content .btn.danger-btn,
+body:not(.dark-mode) #appRoot .content .table-actions .btn.danger-btn,
+body:not(.dark-mode) #appRoot .content .data-table td .btn.danger-btn,
+body:not(.dark-mode) #appRoot .content .project-card .btn.danger-btn {
+  color: #b54441 !important;
+  background: #fff7f7 !important;
+  border-color: #e3b8b6 !important;
+  -webkit-text-fill-color: #b54441 !important;
+  text-shadow: none !important;
+}
+body:not(.dark-mode) #appRoot .content .btn.danger-btn:hover,
+body:not(.dark-mode) #appRoot .content .table-actions .btn.danger-btn:hover,
+body:not(.dark-mode) #appRoot .content .data-table td .btn.danger-btn:hover,
+body:not(.dark-mode) #appRoot .content .project-card .btn.danger-btn:hover {
+  color: #9f3937 !important;
+  background: #fff0f0 !important;
+  border-color: #c98380 !important;
+}
+body:not(.dark-mode) #appRoot .content .actions .btn,
+body:not(.dark-mode) #appRoot .content .table-actions .btn,
+body:not(.dark-mode) #appRoot .content .data-table td .btn {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+/* FINAL ROLE-COLORED PRIMARY ACTIONS
+   Every primary/save action follows the currently signed-in user's role. */
+body.theme-student .btn.primary,
+body.theme-student .profile-modal .modal-actions .btn.primary,
+body.theme-student .primary-btn {
+  background:#3FA968 !important;
+  border-color:#3FA968 !important;
+  color:#fff !important;
+}
+body.theme-student .btn.primary:hover,
+body.theme-student .profile-modal .modal-actions .btn.primary:hover,
+body.theme-student .primary-btn:hover {
+  background:#55BE7B !important;
+  border-color:#55BE7B !important;
+}
+
+body.theme-adviser .btn.primary,
+body.theme-adviser .profile-modal .modal-actions .btn.primary,
+body.theme-adviser .primary-btn {
+  background:#4C8ED8 !important;
+  border-color:#4C8ED8 !important;
+  color:#fff !important;
+}
+body.theme-adviser .btn.primary:hover,
+body.theme-adviser .profile-modal .modal-actions .btn.primary:hover,
+body.theme-adviser .primary-btn:hover {
+  background:#63A1EA !important;
+  border-color:#63A1EA !important;
+}
+
+body.theme-panel .btn.primary,
+body.theme-panel .profile-modal .modal-actions .btn.primary,
+body.theme-panel .primary-btn {
+  background:#A97955 !important;
+  border-color:#A97955 !important;
+  color:#fff !important;
+}
+body.theme-panel .btn.primary:hover,
+body.theme-panel .profile-modal .modal-actions .btn.primary:hover,
+body.theme-panel .primary-btn:hover {
+  background:#BE916B !important;
+  border-color:#BE916B !important;
+}
+
+body.theme-coordinator .btn.primary,
+body.theme-coordinator .profile-modal .modal-actions .btn.primary,
+body.theme-coordinator .primary-btn {
+  background:#D45A57 !important;
+  border-color:#D45A57 !important;
+  color:#fff !important;
+}
+body.theme-coordinator .btn.primary:hover,
+body.theme-coordinator .profile-modal .modal-actions .btn.primary:hover,
+body.theme-coordinator .primary-btn:hover {
+  background:#E66D69 !important;
+  border-color:#E66D69 !important;
+}
+
+/* Keep the role color even when a generic light-mode rule targets .btn.primary. */
+body:not(.dark-mode).theme-student .btn.primary,
+body:not(.dark-mode).theme-student .profile-modal .modal-actions .btn.primary { background:#3FA968 !important; color:#fff !important; border-color:#3FA968 !important; }
+body:not(.dark-mode).theme-adviser .btn.primary,
+body:not(.dark-mode).theme-adviser .profile-modal .modal-actions .btn.primary { background:#4C8ED8 !important; color:#fff !important; border-color:#4C8ED8 !important; }
+body:not(.dark-mode).theme-panel .btn.primary,
+body:not(.dark-mode).theme-panel .profile-modal .modal-actions .btn.primary { background:#A97955 !important; color:#fff !important; border-color:#A97955 !important; }
+body:not(.dark-mode).theme-coordinator .btn.primary,
+body:not(.dark-mode).theme-coordinator .profile-modal .modal-actions .btn.primary { background:#D45A57 !important; color:#fff !important; border-color:#D45A57 !important; }

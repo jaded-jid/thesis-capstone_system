@@ -44,21 +44,45 @@ function initials(name=''){return name.split(/\s+/).slice(0,2).map(x=>x[0]).join
 function avatarMarkup(user, cls='user-table-avatar'){
   const name=esc(user?.full_name||'');
   const initial=esc(initials(user?.full_name||''));
-  if(!user?.profile_image) return `<span class="${cls}">${initial}</span>`;
-  return `<span class="${cls} has-image"><img src="${esc(user.profile_image)}" alt="${name} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"><span class="avatar-fallback" style="display:none">${initial}</span></span>`;
+  const hasImage=!!user?.profile_image;
+  const previewAttrs=hasImage?` role="button" tabindex="0" aria-label="View ${name} profile picture" data-profile-preview="${esc(user.profile_image)}" data-profile-preview-alt="${name} profile picture"`:' aria-hidden="true"';
+  if(!hasImage) return `<span class="${cls}"${previewAttrs}>${initial}</span>`;
+  return `<span class="${cls} has-image profile-preview-trigger"${previewAttrs}><img src="${esc(user.profile_image)}" alt="${name} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"><span class="avatar-fallback" style="display:none">${initial}</span></span>`;
 }
 function setAvatar(el,user){if(!el)return; el.outerHTML=avatarMarkup(user,el.className||'top-avatar');}
+function openImagePreview(src,alt='Profile picture'){
+  if(!src) return;
+  $('#imagePreviewModal')?.remove();
+  const wrap=document.createElement('div');
+  wrap.className='image-preview-backdrop';
+  wrap.id='imagePreviewModal';
+  wrap.innerHTML=`<div class="image-preview-dialog" role="dialog" aria-modal="true" aria-label="${esc(alt)}">
+    <button type="button" class="image-preview-close" data-close-image-preview aria-label="Close image preview">×</button>
+    <img class="image-preview-image" src="${esc(src)}" alt="${esc(alt)}" onerror="this.hidden=true;this.closest('.image-preview-dialog').querySelector('.image-preview-error').hidden=false;">
+    <div class="image-preview-error" hidden>Profile image could not be displayed.</div>
+  </div>`;
+  document.body.appendChild(wrap);
+  requestAnimationFrame(()=>wrap.classList.add('is-open'));
+  setTimeout(()=>wrap.querySelector('.image-preview-close')?.focus(),0);
+}
 function roleLabel(r){return ROLE[r]?.label||r}
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove('show'),2600)}
 
 function applyRoleTheme(role){ document.body.classList.remove('theme-student','theme-adviser','theme-panel','theme-coordinator'); const tone=ROLE[role]?.tone; if(tone) document.body.classList.add('theme-'+tone); }
 function showApp(){
+  // Preserve the user's selected light/dark preference when entering the dashboard.
+  applyTheme(localStorage.getItem('defense-theme')||'dark');
   applyRoleTheme(state.role);
   $('#authRoot').classList.add('hidden');$('#appRoot').classList.remove('hidden');
   $('#identityName').textContent=state.user.full_name;$('#identityRole').textContent=state.user.role_label;
   setAvatar($('#avatar'), state.user);
   const profileButton=$('#profileButton');
-  if(profileButton){ profileButton.onclick=null; profileButton.addEventListener('click', openProfile, {once:false}); }
+  if(profileButton){
+    profileButton.onclick=(e)=>{
+      if(e.target.closest('[data-profile-preview]')) return;
+      openProfile();
+    };
+  }
   renderNav();renderView('dashboard');
 }
 function renderNav(){
@@ -136,11 +160,11 @@ async function roomsView(){const d=await api('/api/rooms');return `${pageHead('F
 
 async function evaluationsView(){const d=await api('/api/evaluations');const canSubmit=(state.role==='panel_member'||state.role==='adviser');return `${pageHead('Assessment',state.role==='student'?'Defense Result':state.role==='panel_member'?'Evaluation':'Evaluations',state.role==='student'?'Review recorded defense results and request clarification if needed.':canSubmit?'Submit confirmed evaluation and recommendations for assigned defenses.':'Review recorded defense evaluation results.',canSubmit?'<button class="btn primary" data-modal="evaluation">Submit evaluation</button>':'' )}<section class="panel"><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Defense</th><th>Evaluator</th><th>Scores</th><th>Recommendation</th><th>Result</th><th>Comments</th>${state.role==='student'?'<th>Action</th>':''}</tr></thead><tbody>${d.evaluations?.length?d.evaluations.map(e=>{const avg=((Number(e.technical_score)+Number(e.presentation_score)+Number(e.documentation_score))/3).toFixed(1);return `<tr><td><b>${esc(e.title)}</b><br>${dateFmt(e.defense_date)} · ${esc(e.defense_type)}</td><td>${esc(e.evaluator_name)}</td><td>Technical ${Number(e.technical_score).toFixed(0)}<br>Presentation ${Number(e.presentation_score).toFixed(0)}<br>Documentation ${Number(e.documentation_score).toFixed(0)}<br><b>Average ${avg}</b></td><td>${esc(e.recommendation)}</td><td>${statusTag(e.defense_result||'—')}</td><td class="muted">${esc(e.comments||'—')}</td>${state.role==='student'?`<td><button class="btn" data-clarify="${e.schedule_id}">Not satisfied / Clarify</button></td>`:''}</tr>`}).join(''):'<tr><td colspan="7"><div class="empty">No evaluation result is available.</div></td></tr>'}</tbody></table></div></section>`}
 
-async function usersView(){const d=await api('/api/users?_='+Date.now());return `${pageHead('Administration','User Management','Create, update, deactivate, and remove system accounts. Public registration is disabled.','<button class="btn primary" data-modal="user">Create account</button>')}<section class="panel"><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody>${d.users.map(u=>`<tr><td><div class="user-name-cell">${avatarMarkup(u)}<b>${esc(u.full_name)}</b></div></td><td>${esc(u.email)}</td><td>${roleLabel(u.role)}</td><td>${u.is_active?statusTag('Active'):statusTag('At Risk')}</td><td><div class="table-actions">${u.id!==state.user.id?`<button class="btn" data-user-edit="${u.id}">Edit</button><button class="btn" data-user-toggle="${u.id}" data-active="${u.is_active}">${u.is_active?'Deactivate':'Activate'}</button><button class="btn danger-btn" data-user-delete="${u.id}">Delete</button>`:'<span class="muted">Current account</span>'}</div></td></tr>`).join('')}</tbody></table></div></section>`}
+async function usersView(){const d=await api('/api/users?_='+Date.now());return `${pageHead('Administration','User Management','Create, update, deactivate, and remove system accounts. Public registration is disabled.','<button class="btn primary" data-modal="user">Create account</button>')}<section class="panel"><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody>${d.users.map(u=>`<tr><td><div class="user-name-cell">${avatarMarkup(u)}<b>${esc(u.full_name)}</b></div></td><td>${esc(u.email)}</td><td><span class="role-label role-label-${esc(u.role)}">${esc(roleLabel(u.role))}</span></td><td>${u.is_active?statusTag('Active'):statusTag('At Risk')}</td><td><div class="table-actions">${u.id!==state.user.id?`<button class="btn" data-user-edit="${u.id}">Edit</button><button class="btn" data-user-toggle="${u.id}" data-active="${u.is_active}">${u.is_active?'Deactivate':'Activate'}</button><button class="btn danger-btn" data-user-delete="${u.id}">Delete</button>`:'<span class="muted">Current account</span>'}</div></td></tr>`).join('')}</tbody></table></div></section>`}
 
 async function managementView(){const d=await api('/api/management');const completed=d.weekly.filter(w=>w.status==='Completed').length;return `${pageHead('Project controls','Project Plan','Your six required project-management documents in one workspace.','')}
 <div class="grid-4">${stat('WBS phases','7','major phases')}${stat('Project weeks','12','Aug 12 – Nov 4')}${stat('Budget',money(d.budgetTotal),'estimated total')}${stat('Completed weeks',completed,'current tracker status','accent-number')}</div>
-<div class="management-grid"><section class="panel"><div class="panel-head"><div><h3>Work Breakdown Structure</h3><span>Seven major phases and work packages</span></div></div><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Code</th><th>Work package</th><th>Target dates</th><th>Status</th></tr></thead><tbody>${d.wbs.map(w=>`<tr><td><b>${esc(w.code)}</b></td><td>${w.phase?'<b>':''}${esc(w.item)}${w.phase?'</b>':''}</td><td>${esc(w.target_dates)}</td><td>${statusTag(w.status)}</td></tr>`).join('')}</tbody></table></div></section>
+<div class="management-grid"><section class="panel management-wbs"><div class="panel-head"><div><h3>Work Breakdown Structure</h3><span>Seven major phases and work packages</span></div></div><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Code</th><th>Work package</th><th>Target dates</th><th>Status</th></tr></thead><tbody>${d.wbs.map(w=>`<tr><td><b>${esc(w.code)}</b></td><td>${w.phase?'<b>':''}${esc(w.item)}${w.phase?'</b>':''}</td><td>${esc(w.target_dates)}</td><td>${statusTag(w.status)}</td></tr>`).join('')}</tbody></table></div></section>
 <section class="panel"><div class="panel-head"><div><h3>Gantt Chart</h3><span>12-week delivery timeline</span></div></div><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Activity</th>${Array.from({length:12},(_,i)=>`<th>W${i+1}</th>`).join('')}</tr></thead><tbody>${d.gantt.map(g=>`<tr><td><b>${esc(g.activity)}</b></td>${Array.from({length:12},(_,i)=>`<td>${i+1>=g.week_start&&i+1<=g.week_end?`<span class="status ${g.status.toLowerCase().replace(/\s+/g,'')}">●</span>`:'—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>
 <section class="panel"><div class="panel-head"><div><h3>Budget Plan</h3><span>Estimated project cost</span></div><strong>${money(d.budgetTotal)}</strong></div><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Category</th><th>Description</th><th>Qty</th><th>Unit cost</th><th>Total</th></tr></thead><tbody>${d.budget.map(b=>`<tr><td><b>${esc(b.category)}</b></td><td>${esc(b.description)}</td><td>${esc(b.quantity)}</td><td>${money(b.unit_cost)}</td><td><b>${money(b.total)}</b></td></tr>`).join('')}</tbody></table></div></section>
 <section class="panel"><div class="panel-head"><div><h3>Risk Register</h3><span>R1–R12 with mitigation and owners</span></div></div><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>ID</th><th>Risk</th><th>Category</th><th>Likelihood</th><th>Impact</th><th>Level</th><th>Mitigation</th><th>Owner</th></tr></thead><tbody>${d.risks.map(r=>`<tr><td><b>${esc(r.id)}</b></td><td>${esc(r.description)}</td><td>${esc(r.category)}</td><td>${esc(r.likelihood)}</td><td>${esc(r.impact)}</td><td>${statusTag(r.risk_level)}</td><td>${esc(r.mitigation)}</td><td>${esc(r.owner)}</td></tr>`).join('')}</tbody></table></div></section>
@@ -153,7 +177,7 @@ function openModal(type){
   const wrap=document.createElement('div');wrap.className='modal-backdrop';wrap.id='modal';
   wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove()});
   let title='',body='',action='';
-  if(type==='user'){title='Create account';action='user';body=`<div class="modal-form"><label>Full name<input id="f-name" required></label><label>Email address<input id="f-email" type="email" required></label><label>Password<input id="f-password" type="password" minlength="8" required></label><label class="full">Panel availability <span class="field-note">Optional</span><textarea id="f-availability" placeholder="Example: Mon–Fri, 9:00 AM–5:00 PM"></textarea></label><label>Role<select id="f-role"><option value="student">Student</option><option value="adviser">Adviser</option><option value="panel_member">Panel Member</option><option value="coordinator">Coordinator / Administrator</option></select></label><div class="full notice"><b>Administrator-issued account</b>This account is created by the Coordinator / Administrator. Public registration remains disabled.</div></div>`}
+  if(type==='user'){title='Create account';action='user';body=`<div class="modal-form"><label>Full name<input id="f-name" required></label><label>Email address<input id="f-email" type="email" required></label><label>Password<input id="f-password" type="password" minlength="8" required></label><label>Role<select id="f-role"><option value="student">Student</option><option value="adviser">Adviser</option><option value="panel_member">Panel Member</option><option value="coordinator">Coordinator / Administrator</option></select></label><div class="full notice"><b>Administrator-issued account</b>This account is created by the Coordinator / Administrator. Public registration remains disabled.</div></div>`}
   if(type==='project'){
     title='Add project';action='project';body=`<div class="modal-form"><label>Type<select id="f-type"><option>Thesis</option><option>Capstone</option></select></label><label>Adviser<select id="f-adviser"><option value="">Select adviser</option></select></label><label class="full">Project title<input id="f-title" placeholder="Enter thesis or capstone title" required></label><label class="full">Students <span class="field-note">Select up to 3</span><select id="f-students" class="multi-select" multiple size="7"></select></label><div class="full notice"><b>Project group</b>Select the student members who belong to this thesis or capstone project. You may select up to three active students.</div></div>`
   }
@@ -184,7 +208,7 @@ async function loadFeedbackProjects(){const p=await api('/api/projects');setTime
 
 async function submitModal(type){
   try{
-    if(type==='user'){await api('/api/users',{method:'POST',body:JSON.stringify({full_name:$('#f-name').value,email:$('#f-email').value,password:$('#f-password').value,role:$('#f-role').value,panel_availability:$('#f-availability')?.value||''})});toast('Account created.');}
+    if(type==='user'){await api('/api/users',{method:'POST',body:JSON.stringify({full_name:$('#f-name').value,email:$('#f-email').value,password:$('#f-password').value,role:$('#f-role').value})});toast('Account created.');}
     if(type==='project'){const ids=[...$('#f-students').selectedOptions].map(o=>Number(o.value)).filter(Boolean);if(ids.length<1||ids.length>3) throw new Error('Select 1 to 3 students.');if(!$('#f-adviser').value) throw new Error('Select an adviser.');await api('/api/projects',{method:'POST',body:JSON.stringify({title:$('#f-title').value,type:$('#f-type').value,adviser_id:Number($('#f-adviser').value),student_ids:ids})});toast('Project added.');}
     if(type==='student-request'){const projectId=Number($('#f-project').value);if(!projectId)throw new Error('Select an assigned project before submitting your request.');await api('/api/defense-requests',{method:'POST',body:JSON.stringify({project_id:projectId,defense_type:$('#f-defense-type').value,preferred_date:$('#f-date').value,preferred_time:$('#f-time').value,reason:$('#f-reason').value})});toast('Defense request submitted.');}
     if(type==='room'){await api('/api/rooms',{method:'POST',body:JSON.stringify({name:$('#f-name').value,location:$('#f-location').value})});toast('Room added.');}
@@ -211,19 +235,20 @@ function openUserEdit(id){
     if(!u)return toast('User not found.');
     const wrap=document.createElement('div');wrap.className='modal-backdrop';wrap.id='userEditModal';
     wrap.innerHTML=`<div class="modal profile-modal"><div class="modal-head"><div><p class="micro">ADMINISTRATION</p><h3>Edit user</h3></div><button class="modal-close" data-close-user-edit>×</button></div>
-      <form id="userEditForm" class="modal-form">
-        <div class="profile-summary full"><div class="profile-large-avatar">${u.profile_image?`<img src="/api/users/${u.id}/profile-image?v=${Date.now()}" alt="${esc(u.full_name)} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="avatar-fallback" style="display:none">${esc(initials(u.full_name))}</span>`:esc(initials(u.full_name))}</div><div><b>${esc(roleLabel(u.role))}</b><span>Coordinator-managed account</span></div></div>
-        <label>Full name<input id="ue-name" value="${esc(u.full_name)}" required></label>
-        <label>Email address<input id="ue-email" type="email" value="${esc(u.email)}" required></label>
-        <label>Role<select id="ue-role"><option value="student">Student</option><option value="adviser">Adviser</option><option value="panel_member">Panel Member</option><option value="coordinator">Coordinator / Administrator</option></select></label>
-        <div class="password-divider full"><span>Optional password reset</span></div><label class="full">Panel availability <span class="field-note">For panel members</span><textarea id="ue-availability" placeholder="Example: Mon–Fri, 9:00 AM–5:00 PM"></textarea></label>
-        <label class="full">New password<input id="ue-password" type="password" autocomplete="new-password" placeholder="Leave blank to keep current password"></label>
+      <form id="userEditForm" class="modal-form profile-edit-form">
+        <div class="profile-form-scroll">
+          <div class="profile-summary full role-summary-${u.role}"><div class="profile-large-avatar role-avatar-${u.role} ${u.profile_image?'profile-preview-trigger':''}"${u.profile_image?` role="button" tabindex="0" data-profile-preview="${esc(`/api/users/${u.id}/profile-image?v=${Date.now()}`)}" data-profile-preview-alt="${esc(u.full_name)} profile picture" aria-label="View ${esc(u.full_name)} profile picture"`:''}>${u.profile_image?`<img src="/api/users/${u.id}/profile-image?v=${Date.now()}" alt="${esc(u.full_name)} profile picture" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="avatar-fallback" style="display:none">${esc(initials(u.full_name))}</span>`:esc(initials(u.full_name))}</div><div><b>${esc(roleLabel(u.role))}</b><span>Coordinator-managed account</span></div></div>
+          <label>Full name<input id="ue-name" value="${esc(u.full_name)}" required></label>
+          <label>Email address<input id="ue-email" type="email" value="${esc(u.email)}" required></label>
+          <label>Role<select id="ue-role"><option value="student">Student</option><option value="adviser">Adviser</option><option value="panel_member">Panel Member</option><option value="coordinator">Coordinator / Administrator</option></select></label>
+          <div class="password-divider full"><span>Optional password reset</span></div>
+          <label class="full">New password<input id="ue-password" type="password" autocomplete="new-password" placeholder="Leave blank to keep current password"></label>
+        </div>
         <div class="modal-actions"><button type="button" class="btn" data-close-user-edit>Cancel</button><button type="submit" class="btn primary">Save user</button></div>
       </form></div>`;
     document.body.appendChild(wrap);
     if($('#ue-role')) $('#ue-role').value=u.role;
-    if($('#ue-availability')) $('#ue-availability').value=u.panel_availability||'';
-    $('#userEditForm').onsubmit=async e=>{e.preventDefault();try{await api('/api/users/'+u.id,{method:'PATCH',body:JSON.stringify({full_name:$('#ue-name').value,email:$('#ue-email').value,password:$('#ue-password').value,panel_availability:$('#ue-availability')?.value||'',role:$('#ue-role').value})});wrap.remove();toast('User account updated.');renderView('users')}catch(err){toast(err.message)}};
+    $('#userEditForm').onsubmit=async e=>{e.preventDefault();try{await api('/api/users/'+u.id,{method:'PATCH',body:JSON.stringify({full_name:$('#ue-name').value,email:$('#ue-email').value,password:$('#ue-password').value,role:$('#ue-role').value})});wrap.remove();toast('User account updated.');renderView('users')}catch(err){toast(err.message)}};
   }).catch(err=>toast(err.message));
 }
 
@@ -232,21 +257,23 @@ function openProfile(){
   const coordinator=state.role==='coordinator';
   const wrap=document.createElement('div');wrap.className='modal-backdrop';wrap.id='profileModal';
   wrap.innerHTML=`<div class="modal profile-modal"><div class="modal-head"><div><p class="micro">ACCOUNT</p><h3>My profile</h3></div><button class="modal-close" data-close-profile>×</button></div>
-    <form id="profileForm" class="modal-form">
-      <div class="profile-summary full"><div class="profile-large-avatar" id="profileAvatarPreview">${u.profile_image?`<img src="${esc(u.profile_image)}" alt="Profile picture"><span class="avatar-fallback" style="display:none">${esc(initials(u.full_name))}</span>`:esc(initials(u.full_name))}</div><div><b>${esc(roleLabel(u.role))}</b><span>${coordinator?'Coordinator accounts can update their own identity details.':'Name and email are managed by the Coordinator / Administrator.'}</span></div></div>
-      <label class="full">Profile picture
-        <div class="profile-upload-row">
-          <input id="p-image" type="file" accept="image/png,image/jpeg,image/webp">
-          ${u.profile_image?'<button type="button" class="btn danger-outline" id="remove-profile-image">Remove picture</button>':''}
-        </div>
-        <small class="field-note">PNG, JPG, or WebP. Maximum 600 KB.</small>
-      </label>
-      <label>Full name<input id="p-name" value="${esc(u.full_name)}" ${coordinator?'':'readonly'} required></label>
-      <label>Email address<input id="p-email" type="email" value="${esc(u.email)}" ${coordinator?'':'readonly'} required></label>
-      <div class="password-divider full"><span>Password</span></div>
-      <label>Current password<input id="p-current" type="password" autocomplete="current-password" placeholder="Required only to change password"></label>
-      <label>New password<input id="p-new" type="password" autocomplete="new-password" placeholder="Leave blank to keep current"></label>
-      <label class="full">Confirm new password<input id="p-confirm" type="password" autocomplete="new-password" placeholder="Re-enter the new password"></label>
+    <form id="profileForm" class="modal-form profile-edit-form">
+      <div class="profile-form-scroll">
+        <div class="profile-summary full role-summary-${u.role}"><div class="profile-large-avatar role-avatar-${u.role} ${u.profile_image?'profile-preview-trigger':''}" id="profileAvatarPreview"${u.profile_image?` role="button" tabindex="0" data-profile-preview="${esc(u.profile_image)}" data-profile-preview-alt="Profile picture" aria-label="View profile picture"`:''}>${u.profile_image?`<img src="${esc(u.profile_image)}" alt="Profile picture"><span class="avatar-fallback" style="display:none">${esc(initials(u.full_name))}</span>`:esc(initials(u.full_name))}</div><div><b>${esc(roleLabel(u.role))}</b><span>${coordinator?'Coordinator accounts can update their own identity details.':'Name and email are managed by the Coordinator / Administrator.'}</span></div></div>
+        <label class="full">Profile picture
+          <div class="profile-upload-row">
+            <input id="p-image" type="file" accept="image/png,image/jpeg,image/webp">
+            ${u.profile_image?'<button type="button" class="btn danger-outline" id="remove-profile-image">Remove picture</button>':''}
+          </div>
+          <small class="field-note">PNG, JPG, or WebP. Maximum 600 KB.</small>
+        </label>
+        <label>Full name<input id="p-name" value="${esc(u.full_name)}" ${coordinator?'':'readonly'} required></label>
+        <label>Email address<input id="p-email" type="email" value="${esc(u.email)}" ${coordinator?'':'readonly'} required></label>
+        <div class="password-divider full"><span>Password</span></div>
+        <label>Current password<input id="p-current" type="password" autocomplete="current-password" placeholder="Required only to change password"></label>
+        <label>New password<input id="p-new" type="password" autocomplete="new-password" placeholder="Leave blank to keep current"></label>
+        <label class="full">Confirm new password<input id="p-confirm" type="password" autocomplete="new-password" placeholder="Re-enter the new password"></label>
+      </div>
       <div class="modal-actions"><button type="button" class="btn" data-close-profile>Cancel</button><button type="submit" class="btn primary">Save changes</button></div>
     </form></div>`;
   document.body.appendChild(wrap);
@@ -266,17 +293,27 @@ function openProfile(){
   });
   $('#profileForm').onsubmit=async (e)=>{
     e.preventDefault();
-    const newPass=$('#p-new').value, confirm=$('#p-confirm').value;
+    const submit=e.submitter||$('#profileForm button[type=submit]');
+    const newPass=$('#p-new').value.trim(), confirm=$('#p-confirm').value.trim();
     if(newPass!==confirm){toast('New passwords do not match.');return;}
+    if(coordinator && (!$('#p-name').value.trim() || !$('#p-email').value.trim())){toast('Name and email are required.');return;}
     try{
+      if(submit){submit.disabled=true;submit.textContent='Saving…';}
       const payload={current_password:$('#p-current').value,new_password:newPass};
-      if(coordinator){payload.full_name=$('#p-name').value;payload.email=$('#p-email').value;}
+      if(coordinator){payload.full_name=$('#p-name').value.trim();payload.email=$('#p-email').value.trim();}
       const file=$('#p-image').files?.[0];
       if(removeProfileImage) payload.profile_image=null;
-      else if(file){ payload.profile_image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);}); }
+      else if(file){ payload.profile_image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Unable to read the selected profile image.'));reader.readAsDataURL(file);}); }
       const d=await api('/api/profile',{method:'PATCH',body:JSON.stringify(payload)});
-      state.user=d.user;showApp();wrap.remove();toast('Profile updated.');
-    }catch(err){toast(err.message)}
+      if(!d?.user) throw new Error('The server did not return the updated account.');
+      state.user=d.user;
+      showApp();
+      wrap.remove();
+      toast('Profile updated successfully.');
+    }catch(err){
+      if(submit){submit.disabled=false;submit.textContent='Save changes';}
+      toast(err?.message||'Unable to save profile.');
+    }
   };
 }
 async function openResubmitRequest(id){const d=await api('/api/defense-requests');const r=d.requests.find(x=>Number(x.id)===Number(id));if(!r)return toast('Request not found.');const wrap=document.createElement('div');wrap.className='modal-backdrop';wrap.id='modal';wrap.innerHTML=`<div class="modal"><div class="modal-head"><h3>Revise & resubmit request</h3><button class="modal-close" data-close-modal>×</button></div><div class="modal-form"><div class="full notice"><b>${esc(r.title)}</b><br>${esc(r.review_feedback||'')}</div><label>Preferred date<input id="rr-date" type="date" value="${String(r.preferred_date).slice(0,10)}"></label><label>Preferred time<input id="rr-time" type="time" value="${String(r.preferred_time).slice(0,5)}"></label><label class="full">Reason / revisions<textarea id="rr-reason">${esc(r.reason||'')}</textarea></label><div class="modal-actions"><button class="btn" data-close-modal>Cancel</button><button class="btn primary" id="rr-send">Resubmit request</button></div></div></div>`;document.body.appendChild(wrap);$('#rr-send').onclick=async()=>{try{await api('/api/defense-requests/'+id+'/resubmit',{method:'PATCH',body:JSON.stringify({preferred_date:$('#rr-date').value,preferred_time:$('#rr-time').value,reason:$('#rr-reason').value})});wrap.remove();toast('Defense request resubmitted.');renderView('requests')}catch(e){toast(e.message)}};}
@@ -353,6 +390,18 @@ window.addEventListener('resize',()=>{if(window.innerWidth>900)setHeroMenu(false
 
 // App actions
 document.addEventListener('click',async e=>{
+  const preview=e.target.closest('[data-profile-preview]');
+  if(preview){
+    e.preventDefault();
+    e.stopPropagation();
+    openImagePreview(preview.dataset.profilePreview,preview.dataset.profilePreviewAlt||'Profile picture');
+    return;
+  }
+  if(e.target.closest('[data-close-image-preview]') || e.target.id==='imagePreviewModal'){
+    e.preventDefault();
+    $('#imagePreviewModal')?.remove();
+    return;
+  }
   const view=e.target.closest('[data-view]')?.dataset.view;if(view){if(window.innerWidth<=1080){$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')}return renderView(view)}
   if(e.target.closest('[data-modal]'))return openModal(e.target.closest('[data-modal]').dataset.modal);
   if(e.target.closest('[data-close-modal]'))return $('#modal')?.remove();
@@ -399,6 +448,17 @@ document.addEventListener('click',async e=>{
     }catch(err){toast(err.message)}
   }
 });
+document.addEventListener('keydown',e=>{
+  const preview=e.target.closest?.('[data-profile-preview]');
+  if(preview && (e.key==='Enter'||e.key===' ')){
+    e.preventDefault();
+    e.stopPropagation();
+    openImagePreview(preview.dataset.profilePreview,preview.dataset.profilePreviewAlt||'Profile picture');
+    return;
+  }
+  if(e.key==='Escape') $('#imagePreviewModal')?.remove();
+});
+
 document.addEventListener('change',async e=>{
   const panelRole=e.target.closest('#f-panel-role');if(panelRole){const scheduleId=Number($('#f-schedule')?.value);if(scheduleId){const [sd,opts]=await Promise.all([api('/api/schedules'),api('/api/panel-options')]);const schedule=(sd.schedules||[]).find(x=>Number(x.id)===scheduleId);renderPanelMemberOptions(schedule,opts);}}
   const ps=e.target.closest('[data-project-status]');if(ps){try{await api(`/api/projects/${ps.dataset.projectStatus}/status`,{method:'PATCH',body:JSON.stringify({status:ps.value})});toast('Project status updated.');renderView('projects')}catch(err){toast(err.message)}}

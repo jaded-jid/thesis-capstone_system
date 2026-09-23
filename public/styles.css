@@ -795,3 +795,509 @@ body:not(.dark-mode) #authRoot .hero-auth__media::before{opacity:.10!important}
   #authRoot .hero-auth__panel{align-self:center}
   #authRoot .hero-step{max-width:620px}
 }
+
+/* ================================================================
+   LOGIN LIGHT THEME — FINAL OVERRIDE
+   Keep auth copy readable regardless of video brightness, role theme,
+   browser contrast, or inherited component variables.
+   ================================================================ */
+html:has(body:not(.dark-mode)) { color-scheme: light; }
+body:not(.dark-mode) #authRoot.hero-auth {
+  --hero-text:#17212b;
+  --hero-dim:#4f5d6a;
+  --hero-dimmer:#596978;
+  --hero-line:rgba(23,33,43,.18);
+  --hero-line-strong:rgba(23,33,43,.30);
+  --hero-ghost:rgba(23,33,43,.05);
+  --hero-solid:rgba(23,33,43,.08);
+  background:#eef2f5 !important;
+  color:#17212b !important;
+}
+body:not(.dark-mode) #authRoot .hero-auth__media,
+body:not(.dark-mode) #authRoot .hero-auth__media video {
+  z-index:-4 !important;
+}
+body:not(.dark-mode) #authRoot .hero-auth__scrim {
+  z-index:-3 !important;
+  background:
+    linear-gradient(90deg,rgba(244,247,249,.96) 0%,rgba(244,247,249,.93) 40%,rgba(244,247,249,.88) 72%,rgba(244,247,249,.95) 100%),
+    linear-gradient(180deg,rgba(255,255,255,.76),rgba(255,255,255,.48) 50%,rgba(240,244,247,.84)) !important;
+}
+body:not(.dark-mode) #authRoot .hero-auth__nav,
+body:not(.dark-mode) #authRoot .hero-auth__body,
+body:not(.dark-mode) #authRoot .hero-auth__footer {
+  position:relative;
+  z-index:10;
+}
+body:not(.dark-mode) #authRoot .hero-auth__logo,
+body:not(.dark-mode) #authRoot h1,
+body:not(.dark-mode) #authRoot h2,
+body:not(.dark-mode) #authRoot .hero-tagline,
+body:not(.dark-mode) #authRoot .hero-form-label,
+body:not(.dark-mode) #authRoot .hero-role-purpose,
+body:not(.dark-mode) #authRoot .hero-note,
+body:not(.dark-mode) #authRoot .hero-field,
+body:not(.dark-mode) #authRoot .hero-back,
+body:not(.dark-mode) #authRoot .hero-auth__footer,
+body:not(.dark-mode) #authRoot .hero-role,
+body:not(.dark-mode) #authRoot .hero-role strong,
+body:not(.dark-mode) #authRoot .hero-role span,
+body:not(.dark-mode) #authRoot .hero-role small,
+body:not(.dark-mode) #authRoot .hero-role i,
+body:not(.dark-mode) #authRoot .hero-contact-box,
+body:not(.dark-mode) #authRoot .hero-contact-box strong,
+body:not(.dark-mode) #authRoot .hero-contact-box p,
+body:not(.dark-mode) #authRoot .hero-contact-box small,
+body:not(.dark-mode) #authRoot .hero-contact-box__eyebrow {
+  opacity:1 !important;
+  visibility:visible !important;
+  color:inherit;
+}
+body:not(.dark-mode) #authRoot .hero-auth__logo,
+body:not(.dark-mode) #authRoot h1,
+body:not(.dark-mode) #authRoot h2 { color:#17212b !important; }
+body:not(.dark-mode) #authRoot .hero-tagline,
+body:not(.dark-mode) #authRoot .hero-form-label,
+body:not(.dark-mode) #authRoot .hero-role-purpose,
+body:not(.dark-mode) #authRoot .hero-note,
+body:not(.dark-mode) #authRoot .hero-field,
+body:not(.dark-mode) #authRoot .hero-back,
+body:not(.dark-mode) #authRoot .hero-auth__footer { color:#4f5d6a !important; }
+body:not(.dark-mode) #authRoot .hero-chip {
+  color:#17212b !important;
+  background:#ffffff !important;
+  border:1px solid rgba(23,33,43,.16) !important;
+}
+body:not(.dark-mode) #authRoot .hero-role {
+  background:rgba(255,255,255,.97) !important;
+  border:1px solid rgba(23,33,43,.18) !important;
+  color:#17212b !important;
+}
+body:not(.dark-mode) #authRoot .hero-role:hover {
+  background:#ffffff !important;
+  border-color:rgba(23,33,43,.34) !important;
+}
+body:not(.dark-mode) #authRoot .hero-role span,
+body:not(.dark-mode) #authRoot .hero-role small { color:#5e6b78 !important; }
+body:not(.dark-mode) #authRoot .hero-role strong { color:#17212b !important; }
+body:not(.dark-mode) #authRoot .hero-role i { color:#34414d !important; }
+body:not(.dark-mode) #authRoot .hero-theme-switch {
+  background:#ffffff !important;
+  border:1px solid rgba(23,33,43,.22) !important;
+}
+body:not(.dark-mode) #authRoot .hero-theme-option { color:#465363 !important; }
+body:not(.dark-mode) #authRoot .hero-theme-option.is-active { background:#17212b !important; color:#ffffff !important; }
+body:not(.dark-mode) #authRoot .hero-field input {
+  color:#17212b !important;
+  background:#ffffff !important;
+  border-bottom:1px solid rgba(23,33,43,.35) !important;
+  -webkit-text-fill-color:#17212b !important;
+  caret-color:#17212b !important;
+}
+body:not(.dark-mode) #authRoot .hero-field input::placeholder {
+  color:#6a7683 !important;
+  opacity:1 !important;
+  -webkit-text-fill-color:#6a7683 !important;
+}
+body:not(.dark-mode) #authRoot .hero-password button { color:#34414d !important; }
+body:not(.dark-mode) #authRoot .hero-btn--solid { background:#17212b !important; color:#fff !important; }
+body:not(.dark-mode) #authRoot .hero-contact-box {
+  background:#ffffff !important;
+  border:1px solid rgba(23,33,43,.20) !important;
+  color:#33424f !important;
+}
+body:not(.dark-mode) #authRoot .hero-contact-box strong { color:#17212b !important; }
+body:not(.dark-mode) #authRoot .hero-contact-box__eyebrow,
+body:not(.dark-mode) #authRoot .hero-contact-box small { color:#5b6875 !important; }
+body:not(.dark-mode) #authRoot .hero-contact-box p { color:#33424f !important; }
+
+
+/* Full-size profile image preview */
+.profile-preview-trigger{cursor:zoom-in !important;pointer-events:auto !important;position:relative;z-index:2;}
+.profile-preview-trigger:focus-visible{outline:2px solid #5E6AD2;outline-offset:3px;}
+.image-preview-backdrop{position:fixed;inset:0;z-index:999;background:rgba(2,2,3,.90);backdrop-filter:blur(12px);display:grid;place-items:center;padding:24px;opacity:0;visibility:hidden;transition:opacity .18s ease,visibility .18s ease;}
+.image-preview-backdrop.is-open{opacity:1;visibility:visible;}
+.image-preview-dialog{position:relative;max-width:min(92vw,1200px);max-height:92vh;display:grid;place-items:center;}
+.image-preview-image{display:block;max-width:92vw;max-height:88vh;width:auto;height:auto;object-fit:contain;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.12);background:#0a0a0c;}
+.image-preview-close{position:absolute;right:-10px;top:-10px;width:42px;height:42px;border:1px solid rgba(255,255,255,.16);border-radius:12px;background:rgba(10,10,12,.92);color:#EDEDEF;font-size:25px;line-height:1;cursor:pointer;z-index:2;box-shadow:0 8px 26px rgba(0,0,0,.35);}
+.image-preview-close:hover{background:#5E6AD2;border-color:#6872D9;}
+.image-preview-error{padding:28px 34px;color:#DDE0E5;border:1px solid rgba(255,255,255,.10);border-radius:12px;background:#0F0F12;}
+@media (max-width:640px){.image-preview-backdrop{padding:14px}.image-preview-image{max-width:94vw;max-height:80vh}.image-preview-close{right:4px;top:4px;width:40px;height:40px}}
+
+/* FINAL SIDEBAR LAYOUT FIX — sidebar itself never scrolls; navigation alone scrolls. */
+.app-shell > .sidebar,
+.app-shell .sidebar {
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  max-height: 100dvh !important;
+  position: sticky !important;
+  top: 0 !important;
+  bottom: auto !important;
+  overflow: hidden !important;
+  flex: 0 0 255px !important;
+  box-sizing: border-box !important;
+}
+.app-shell .sidebar-head,
+.app-shell .sidebar > .identity-card,
+.app-shell .sidebar > .sidebar-foot {
+  flex: 0 0 auto !important;
+}
+.app-shell .sidebar > .nav {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.app-shell .sidebar > .sidebar-foot {
+  margin-top: 0 !important;
+  padding-top: 4px;
+  flex-shrink: 0 !important;
+}
+.app-shell .sidebar > .sidebar-foot .logout-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 42px !important;
+  flex-shrink: 0 !important;
+}
+@media (max-width: 720px) {
+  .app-shell > .sidebar,
+  .app-shell .sidebar {
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    flex-basis: 264px !important;
+    overflow: hidden !important;
+  }
+}
+
+
+/* ================================================================
+   LINEAR APP-SHELL / PROJECT-PLAN REFINEMENTS
+   Keep the application shell locked to the viewport. Only the
+   workspace content and nav list scroll, while the sidebar identity
+   and sign-out stay visible.
+   ================================================================ */
+html:has(#appRoot:not(.hidden)),
+body:has(#appRoot:not(.hidden)){
+  height:100%;
+}
+#appRoot:not(.hidden){
+  height:100dvh !important;
+  min-height:0 !important;
+  max-height:100dvh !important;
+  overflow:hidden !important;
+}
+#appRoot:not(.hidden) > .sidebar{
+  height:100dvh !important;
+  min-height:0 !important;
+  max-height:100dvh !important;
+  overflow:hidden !important;
+}
+#appRoot:not(.hidden) > .workspace{
+  height:100dvh !important;
+  min-height:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+}
+#appRoot:not(.hidden) > .workspace > .topbar{
+  flex:0 0 auto !important;
+}
+#appRoot:not(.hidden) > .workspace > .content{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  overflow:auto !important;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.16) transparent;
+}
+#appRoot:not(.hidden) > .workspace > .content::-webkit-scrollbar{width:9px;height:9px}
+#appRoot:not(.hidden) > .workspace > .content::-webkit-scrollbar-track{background:transparent}
+#appRoot:not(.hidden) > .workspace > .content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:999px}
+#appRoot:not(.hidden) > .workspace > .content::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.24)}
+
+/* Project Plan: compact, dense, but still readable. */
+.management-grid{gap:16px !important}
+.management-grid > .panel .panel-head{position:relative}
+.management-grid > .panel .panel-head::before{
+  content:"";
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:2px;
+  background:linear-gradient(180deg,#5E6AD2,rgba(94,106,210,.15));
+  opacity:.95;
+}
+.management-grid > .panel .panel-head h3{letter-spacing:-.025em}
+.management-grid > .panel .panel-head span{line-height:1.45}
+.management-wbs .table-wrap{
+  max-height:clamp(280px,calc(100dvh - 330px),520px);
+  overflow:auto !important;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.15) transparent;
+}
+.management-wbs .table-wrap::-webkit-scrollbar{width:8px;height:8px}
+.management-wbs .table-wrap::-webkit-scrollbar-track{background:transparent}
+.management-wbs .table-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:999px}
+.management-wbs .data-table{min-width:720px}
+.management-wbs .data-table thead th{
+  position:sticky;top:0;z-index:3;
+  background:rgba(11,11,14,.94);
+  backdrop-filter:blur(12px);
+}
+.management-wbs .data-table tbody tr{transition:background .18s ease,transform .18s ease}
+.management-wbs .data-table tbody tr:hover{background:rgba(94,106,210,.055)}
+.management-wbs .data-table td:first-child{color:#AEB5FF;font-family:"JetBrains Mono",monospace;font-weight:600}
+.management-wbs .data-table td:nth-child(2){color:#E4E7EC}
+.management-wbs .data-table td:nth-child(3){color:#8B92A0}
+.management-wbs .data-table td:nth-child(4){text-align:right}
+
+@media(max-width:900px){
+  #appRoot:not(.hidden) > .workspace > .content{padding-inline:20px}
+  .management-wbs .table-wrap{max-height:48dvh}
+}
+@media(max-width:720px){
+  #appRoot:not(.hidden){height:100dvh !important;max-height:100dvh !important}
+  #appRoot:not(.hidden) > .workspace > .content{padding:18px 14px 28px}
+  .management-wbs .data-table{min-width:680px}
+}
+
+/* Coordinator profile modal: keep actions reachable without scrolling the whole dialog */
+.profile-modal{
+  max-height:calc(100dvh - 24px) !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+.profile-modal .modal-head{
+  flex:0 0 auto;
+}
+.profile-modal #profileForm,
+.profile-modal #userEditForm{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding-bottom:0;
+  scrollbar-width:thin;
+}
+.profile-modal .modal-actions{
+  position:sticky;
+  bottom:0;
+  z-index:5;
+  background:var(--surface,#fff);
+  border-top:1px solid var(--line);
+  margin:4px -20px 0;
+  padding:14px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+}
+@media(max-width:640px){
+  .profile-modal{max-height:calc(100dvh - 12px) !important;}
+  .profile-modal .modal-actions{
+    margin-left:-14px;
+    margin-right:-14px;
+    padding-left:14px;
+    padding-right:14px;
+  }
+}
+
+/* =====================================================================
+   ROLE COLOR SYSTEM — preserve the identity color of every signed-in user
+   Student = green | Adviser = blue | Panel Member = light brown | Coordinator = red
+   ===================================================================== */
+:root {
+  --student-role: #2f8a55;
+  --student-role-soft: #eaf6ee;
+  --student-role-border: #cfe7d6;
+  --adviser-role: #3974b9;
+  --adviser-role-soft: #eaf2fc;
+  --adviser-role-border: #cbdcf1;
+  --panel-role: #8a5a39;
+  --panel-role-soft: #f6eee8;
+  --panel-role-border: #e5d5c8;
+  --coordinator-role: #b54441;
+  --coordinator-role-soft: #fceceb;
+  --coordinator-role-border: #efcecc;
+}
+
+/* Sidebar / current signed-in role */
+body.theme-student #identityRole { color: var(--student-role) !important; }
+body.theme-adviser #identityRole { color: var(--adviser-role) !important; }
+body.theme-panel #identityRole { color: var(--panel-role) !important; }
+body.theme-coordinator #identityRole { color: var(--coordinator-role) !important; }
+body.theme-student .identity-card,
+body.theme-adviser .identity-card,
+body.theme-panel .identity-card,
+body.theme-coordinator .identity-card { border-color: color-mix(in srgb, var(--role-accent) 22%, transparent); }
+
+/* Login role selection — each role carries its own color even before selection */
+#authRoot .hero-role[data-role="student"] strong { color: var(--student-role) !important; }
+#authRoot .hero-role[data-role="adviser"] strong { color: var(--adviser-role) !important; }
+#authRoot .hero-role[data-role="panel_member"] strong { color: var(--panel-role) !important; }
+#authRoot .hero-role[data-role="coordinator"] strong { color: var(--coordinator-role) !important; }
+#authRoot .hero-role[data-role="student"] { border-left: 3px solid var(--student-role); }
+#authRoot .hero-role[data-role="adviser"] { border-left: 3px solid var(--adviser-role); }
+#authRoot .hero-role[data-role="panel_member"] { border-left: 3px solid var(--panel-role); }
+#authRoot .hero-role[data-role="coordinator"] { border-left: 3px solid var(--coordinator-role); }
+
+/* Legacy role cards, if present in the older auth step */
+.role-choice:has(.role-icon.student) b { color: var(--student-role) !important; }
+.role-choice:has(.role-icon.adviser) b { color: var(--adviser-role) !important; }
+.role-choice:has(.role-icon.panel) b { color: var(--panel-role) !important; }
+.role-choice:has(.role-icon.coordinator) b { color: var(--coordinator-role) !important; }
+
+/* User Management role labels */
+.role-label { font-weight: 700; }
+.role-label-student { color: var(--student-role) !important; }
+.role-label-adviser { color: var(--adviser-role) !important; }
+.role-label-panel_member { color: var(--panel-role) !important; }
+.role-label-coordinator { color: var(--coordinator-role) !important; }
+
+/* Profile / Edit User summary follows the account being viewed, not the logged-in user's role */
+.role-summary-student { background: var(--student-role-soft) !important; border-color: var(--student-role-border) !important; color: var(--student-role) !important; }
+.role-summary-adviser { background: var(--adviser-role-soft) !important; border-color: var(--adviser-role-border) !important; color: var(--adviser-role) !important; }
+.role-summary-panel_member { background: var(--panel-role-soft) !important; border-color: var(--panel-role-border) !important; color: var(--panel-role) !important; }
+.role-summary-coordinator { background: var(--coordinator-role-soft) !important; border-color: var(--coordinator-role-border) !important; color: var(--coordinator-role) !important; }
+.role-summary-student b,
+.role-summary-adviser b,
+.role-summary-panel_member b,
+.role-summary-coordinator b { color: inherit !important; }
+.role-summary-student span,
+.role-summary-adviser span,
+.role-summary-panel_member span,
+.role-summary-coordinator span { color: color-mix(in srgb, currentColor 72%, #6e7683) !important; }
+.role-avatar-student { background: var(--student-role) !important; }
+.role-avatar-adviser { background: var(--adviser-role) !important; }
+.role-avatar-panel_member { background: #a67a56 !important; }
+.role-avatar-coordinator { background: var(--coordinator-role) !important; }
+
+/* Modal title / password divider uses the current account role */
+body.theme-student .profile-modal .password-divider { color: var(--student-role) !important; }
+body.theme-adviser .profile-modal .password-divider { color: var(--adviser-role) !important; }
+body.theme-panel .profile-modal .password-divider { color: var(--panel-role) !important; }
+body.theme-coordinator .profile-modal .password-divider { color: var(--coordinator-role) !important; }
+
+/* Current role accent stays visible on major application headings */
+body.theme-student .page-intro h2,
+body.theme-adviser .page-intro h2,
+body.theme-panel .page-intro h2,
+body.theme-coordinator .page-intro h2 { color: var(--role-deep) !important; }
+
+/* Light mode keeps role colors saturated enough to remain readable */
+body:not(.dark-mode).theme-student .role-summary-student,
+body:not(.dark-mode).theme-adviser .role-summary-adviser,
+body:not(.dark-mode).theme-panel .role-summary-panel_member,
+body:not(.dark-mode).theme-coordinator .role-summary-coordinator { color: var(--role-accent) !important; }
+
+
+/* =====================================================================
+   FINAL ACCESSIBILITY / ROLE COLOR / PROFILE MODAL PATCH
+   ===================================================================== */
+/* Role colors must remain visible in BOTH login themes. */
+#authRoot .hero-role[data-role="student"] { border-left:4px solid #2f8a55 !important; }
+#authRoot .hero-role[data-role="student"] strong { color:#2f8a55 !important; }
+#authRoot .hero-role[data-role="student"] span,
+#authRoot .hero-role[data-role="student"] i { color:#2f8a55 !important; }
+#authRoot .hero-role[data-role="adviser"] { border-left:4px solid #3974b9 !important; }
+#authRoot .hero-role[data-role="adviser"] strong { color:#3974b9 !important; }
+#authRoot .hero-role[data-role="adviser"] span,
+#authRoot .hero-role[data-role="adviser"] i { color:#3974b9 !important; }
+#authRoot .hero-role[data-role="panel_member"] { border-left:4px solid #8a5a39 !important; }
+#authRoot .hero-role[data-role="panel_member"] strong { color:#8a5a39 !important; }
+#authRoot .hero-role[data-role="panel_member"] span,
+#authRoot .hero-role[data-role="panel_member"] i { color:#8a5a39 !important; }
+#authRoot .hero-role[data-role="coordinator"] { border-left:4px solid #b54441 !important; }
+#authRoot .hero-role[data-role="coordinator"] strong { color:#b54441 !important; }
+#authRoot .hero-role[data-role="coordinator"] span,
+#authRoot .hero-role[data-role="coordinator"] i { color:#b54441 !important; }
+body:not(.dark-mode) #authRoot .hero-role[data-role="student"] strong { color:#2f8a55 !important; }
+body:not(.dark-mode) #authRoot .hero-role[data-role="adviser"] strong { color:#3974b9 !important; }
+body:not(.dark-mode) #authRoot .hero-role[data-role="panel_member"] strong { color:#8a5a39 !important; }
+body:not(.dark-mode) #authRoot .hero-role[data-role="coordinator"] strong { color:#b54441 !important; }
+#authRoot .hero-role[data-role="student"].selected { background:rgba(47,138,85,.10) !important; border-color:rgba(47,138,85,.45) !important; }
+#authRoot .hero-role[data-role="adviser"].selected { background:rgba(57,116,185,.10) !important; border-color:rgba(57,116,185,.45) !important; }
+#authRoot .hero-role[data-role="panel_member"].selected { background:rgba(138,90,57,.10) !important; border-color:rgba(138,90,57,.45) !important; }
+#authRoot .hero-role[data-role="coordinator"].selected { background:rgba(181,68,65,.10) !important; border-color:rgba(181,68,65,.45) !important; }
+
+/* Profile / user edit dialogs: fixed viewport shell + scrollable form body + always-visible actions. */
+.profile-modal{
+  width:min(700px,calc(100vw - 32px)) !important;
+  height:min(760px,calc(100dvh - 32px)) !important;
+  max-height:calc(100dvh - 32px) !important;
+  min-height:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+}
+.profile-modal > .modal-head{
+  flex:0 0 auto !important;
+  color:var(--ink) !important;
+}
+.profile-modal > .modal-head h3,
+.profile-modal > .modal-head .micro{color:var(--ink) !important;}
+.profile-edit-form{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  padding:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:0 !important;
+  overflow:hidden !important;
+}
+.profile-form-scroll{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+  padding:20px !important;
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:15px !important;
+  scrollbar-width:thin;
+}
+.profile-edit-form > .modal-actions{
+  flex:0 0 auto !important;
+  position:relative !important;
+  z-index:6 !important;
+  display:flex !important;
+  justify-content:flex-end !important;
+  gap:8px !important;
+  margin:0 !important;
+  padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px)) !important;
+  background:var(--surface,#fff) !important;
+  border-top:1px solid var(--line) !important;
+  box-shadow:0 -8px 20px rgba(16,24,40,.06) !important;
+}
+.profile-edit-form > .modal-actions .btn{min-height:44px !important;}
+body:not(.dark-mode) .profile-modal{background:#fff !important;color:#20242c !important;}
+body:not(.dark-mode) .profile-modal .modal-form label{color:#3f4a59 !important;}
+body:not(.dark-mode) .profile-modal .field-note,
+body:not(.dark-mode) .profile-modal .profile-summary span{color:#667085 !important;}
+body:not(.dark-mode) .profile-modal .modal-form input,
+body:not(.dark-mode) .profile-modal .modal-form textarea,
+body:not(.dark-mode) .profile-modal .modal-form select{color:#20242c !important;-webkit-text-fill-color:#20242c !important;background:#fff !important;}
+body:not(.dark-mode) .profile-modal .modal-form input::placeholder,
+body:not(.dark-mode) .profile-modal .modal-form textarea::placeholder{color:#8a94a3 !important;-webkit-text-fill-color:#8a94a3 !important;}
+body:not(.dark-mode) .profile-modal .modal-close{color:#4b5563 !important;background:#f1f3f5 !important;}
+body:not(.dark-mode) .profile-modal .modal-actions .btn:not(.primary){color:#303846 !important;background:#fff !important;border-color:#d9dee6 !important;}
+body:not(.dark-mode) .profile-modal .modal-actions .btn.primary{color:#fff !important;background:var(--role-accent) !important;border-color:var(--role-accent) !important;}
+body.dark-mode .profile-modal .modal-actions{background:#111319 !important;color:#EDEDEF !important;border-color:#303744 !important;}
+body.dark-mode .profile-modal .modal-head h3,
+body.dark-mode .profile-modal .modal-head .micro{color:#EDEDEF !important;}
+body.dark-mode .profile-modal .modal-form label{color:#9ba3b1 !important;}
+body.dark-mode .profile-modal .modal-form input,
+body.dark-mode .profile-modal .modal-form textarea,
+body.dark-mode .profile-modal .modal-form select{color:#EDEDEF !important;-webkit-text-fill-color:#EDEDEF !important;background:#171b23 !important;}
+@media(max-width:640px){
+  .profile-modal{width:calc(100vw - 16px) !important;height:calc(100dvh - 16px) !important;max-height:calc(100dvh - 16px) !important;}
+  .profile-form-scroll{grid-template-columns:1fr !important;padding:16px !important;}
+  .profile-edit-form > .modal-actions{padding-left:16px !important;padding-right:16px !important;flex-wrap:wrap !important;}
+  .profile-edit-form > .modal-actions .btn{flex:1 1 140px !important;}
+}
