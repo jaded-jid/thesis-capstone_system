@@ -7,10 +7,10 @@ This is the redesigned full-stack implementation of the thesis/capstone defense 
 - Student submits a proposal/final defense request using an assigned project, preferred date, and preferred time.
 - Adviser or Coordinator can approve a pending request; approval automatically creates the schedule from the student's requested date/time.
 - A Coordinator may also create or edit a defense schedule manually.
-<<<<<<< HEAD
+
 - Coordinators have a dedicated Conflict Detection page that scans upcoming defenses for overlapping project, student, adviser, panel-member, and room assignments; schedule creation and edits also validate conflicts before saving.
 =======
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
+
 - Panel members are assigned to an existing defense schedule; date/time are always inherited from that schedule.
 - Panel members may proceed or request a reschedule. An approved reschedule updates the existing defense schedule to the requested date/time.
 - Evaluations record scores, recommendation, comments, and a formal defense result. The defense becomes completed after all assigned evaluators submit.
@@ -23,14 +23,14 @@ The Coordinator has access to the supplied WBS, Gantt Chart, Budget Plan, Risk R
 - There is no public registration endpoint.
 - Accounts are created by the Coordinator / Administrator only.
 - Normal users cannot change their name or email.
-<<<<<<< HEAD
+
 - Coordinators can manage regular user accounts and important actions are recorded in an audit log.
 - The initial main Coordinator / Administrator account is marked as protected and cannot be deactivated, deleted, or edited through User Management by other coordinators. The main coordinator can update their own identity details through My Profile.
 - Existing databases are migrated automatically; the configured initial administrator is used when available, otherwise the oldest coordinator account is marked as the main coordinator.
 =======
 - Coordinators can update user name, email, role, password, and panel availability.
 - Important actions are recorded in an audit log.
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
+
 
 ## Local setup
 1. Create a PostgreSQL database named `thesisflow`.
