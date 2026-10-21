@@ -8,7 +8,11 @@ const ROLE={
 };
 const NAV={
   coordinator:[
+<<<<<<< HEAD
     ['group','Operations'],['dashboard','Dashboard','⌂'],['requests','Defense Requests','↗'],['schedules','Defense Scheduling','◷'],['conflicts','Conflict Detection','⚠'],['panels','Panel Assignment','◇'],['rooms','Rooms','□'],
+=======
+    ['group','Operations'],['dashboard','Dashboard','⌂'],['requests','Defense Requests','↗'],['schedules','Defense Scheduling','◷'],['panels','Panel Assignment','◇'],['rooms','Rooms','□'],
+>>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
     ['group','Academic records'],['projects','Projects','▣'],['evaluations','Evaluations','✓'],['reports','Reports','▤'],
     ['group','Administration'],['users','User Management','♙'],['management','Project Plan','▥']
   ],
@@ -22,7 +26,11 @@ const NAV={
     ['group','Defense duties'],['dashboard','Dashboard','⌂'],['schedules','Assigned Defenses & Schedule','◷'],['evaluations','Evaluation','✓']
   ]
 };
+<<<<<<< HEAD
 const TITLES={dashboard:['Overview','Dashboard'],requests:['Defense workflow','Defense Requests'],schedules:['Scheduling','Defense Scheduling'],conflicts:['Scheduling safeguards','Conflict Detection'],panels:['Assignments','Panel Assignment'],rooms:['Facilities','Rooms'],projects:['Academic records','Projects'],evaluations:['Results','Evaluations'],users:['Administration','User Management'],management:['Project controls','Project Plan'],reports:['Reports','Reports']};
+=======
+const TITLES={dashboard:['Overview','Dashboard'],requests:['Defense workflow','Defense Requests'],schedules:['Scheduling','Defense Scheduling'],panels:['Assignments','Panel Assignment'],rooms:['Facilities','Rooms'],projects:['Academic records','Projects'],evaluations:['Results','Evaluations'],users:['Administration','User Management'],management:['Project controls','Project Plan'],reports:['Reports','Reports']};
+>>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
 
 let csrfToken='';
 async function api(url,opts={}){
@@ -98,7 +106,11 @@ async function renderView(view){
   const t=TITLES[view]||['Workspace','Dashboard'];$('#pageKicker').textContent=t[0];$('#pageTitle').textContent=t[1];$('#today').textContent=new Intl.DateTimeFormat('en-PH',{weekday:'short',month:'short',day:'numeric',year:'numeric'}).format(new Date());
   const root=$('#content');root.innerHTML='<div class="panel"><div class="empty">Loading workspace…</div></div>';
   try{
+<<<<<<< HEAD
     const builders={dashboard:dashboardView,requests:requestsView,schedules:schedulesView,conflicts:conflictsView,panels:panelsView,rooms:roomsView,projects:projectsView,evaluations:evaluationsView,users:usersView,management:managementView,reports:reportsView};
+=======
+    const builders={dashboard:dashboardView,requests:requestsView,schedules:schedulesView,panels:panelsView,rooms:roomsView,projects:projectsView,evaluations:evaluationsView,users:usersView,management:managementView,reports:reportsView};
+>>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
     root.innerHTML=await builders[view]();
   }catch(e){root.innerHTML=`<div class="panel"><div class="empty danger">${esc(e.message)}</div></div>`}
 }
@@ -148,12 +160,17 @@ async function schedulesView(){
   const canManage=state.role==='coordinator';
   const canPanel=state.role==='panel_member';
   let reschedule=canPanel?'<span class="chip">Panel flow: Proceed / Request reschedule</span>':'';
+<<<<<<< HEAD
   const action=canManage?'<button class="btn" data-view="conflicts">Conflict Detection</button><button class="btn primary" data-modal="schedule">Add defense schedule</button>':'';
+=======
+  const action=canManage?'<button class="btn primary" data-modal="schedule">Add defense schedule</button>':'';
+>>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
   return `${pageHead('Scheduling',state.role==='student'?'My Schedule':state.role==='panel_member'?'Assigned Defense':'Defense Schedule',state.role==='coordinator'?'Create schedules from requests marked ready for scheduling, or use Proceed to Defense for automatic scheduling from the the student\'s preferred date and time.':canPanel?'Review assigned defenses and proceed or request reschedule.':'View the defense schedule related to your assigned work.',action)}
   <section class="panel"><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Project</th><th>Type</th><th>Time</th><th>Room</th><th>Status</th>${canPanel?'<th>Action</th>':''}${canManage?'<th>Manage</th>':''}</tr></thead><tbody>${visibleSchedules.length?visibleSchedules.map(s=>`<tr><td>${dateFmt(s.defense_date)}</td><td><b>${esc(s.title)}</b></td><td>${esc(s.defense_type)}</td><td>${timeFmt(s.start_time)}–${timeFmt(s.end_time)}</td><td>${esc(s.room_name||'Room TBA')}</td><td>${statusTag(s.status)}${s.panel_proceedance!=='Pending'?`<br>${statusTag(s.panel_proceedance)}`:''}</td>${canPanel?`<td>${s.panel_proceedance==='Pending'&&s.status==='Upcoming'?`<button class="btn purple" data-proceed="${s.id}">Proceed</button> <button class="btn" data-reschedule="${s.id}">Reschedule</button>`:s.status==='Completed'?`<button class="btn" data-view="evaluations">Evaluation</button>`:'—'}</td>`:''}${canManage?`<td>${s.status==='Upcoming'?`<button class="btn" data-schedule-edit="${s.id}">Edit</button> <button class="btn" data-room-assign="${s.id}">${s.room_id?'Change room':'Assign room'}</button> <button class="btn" data-cancel="${s.id}">Cancel</button>`:'—'}</td>`:''}</tr>`).join(''):'<tr><td colspan="8"><div class="empty">No active defense schedules found.</div></td></tr>'}</tbody></table></div></section>${canManage?`<section class="panel" style="margin-top:15px"><div class="panel-head"><div><h3>Reschedule requests</h3><span>Panel members can request a different defense time</span></div></div><div class="panel-body">${await rescheduleRequestsHtml()}</div></section>`:''}${reschedule?`<div style="margin-top:12px">${reschedule}</div>`:''}`}
 
 async function rescheduleRequestsHtml(){const d=await api('/api/reschedule-requests');return d.requests?.length?d.requests.map(r=>`<div class="request-item"><div class="request-main"><b>${esc(r.requester_name)} · ${esc(r.title)}</b><small>Current: ${dateFmt(r.defense_date)} ${timeFmt(r.start_time)} · Requested: ${dateFmt(r.preferred_date)} ${timeFmt(r.preferred_time)}<br>${esc(r.reason)}</small></div>${statusTag(r.status)}${r.status==='Pending'?`<div><button class="btn purple" data-resched-review="${r.id}" data-status="Approved">Approve</button> <button class="btn" data-resched-review="${r.id}" data-status="Rejected">Reject</button></div>`:''}</div>`).join(''):'<div class="empty">No reschedule requests.</div>'}
 
+<<<<<<< HEAD
 async function conflictsView(){
   const d=await api('/api/schedule-conflicts');
   const conflicts=d.conflicts||[];
@@ -165,13 +182,19 @@ async function conflictsView(){
   ${conflicts.length?`<div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Shared resource</th><th>Defense schedule A</th><th>Defense schedule B</th></tr></thead><tbody>${conflicts.map(c=>`<tr><td><b>${dateFmt(c.date)}</b></td><td><div style="display:flex;gap:6px;flex-wrap:wrap">${detailHtml(c.issues)}</div></td><td><b>${esc(c.first.title)}</b><br><span class="muted">${esc(c.first.defense_type)} · #${c.first.id}</span><br><span>${timeFmt(c.first.start_time)}–${timeFmt(c.first.end_time)}</span><br><span class="muted">${esc(c.first.room_name||'Room TBA')}</span></td><td><b>${esc(c.second.title)}</b><br><span class="muted">${esc(c.second.defense_type)} · #${c.second.id}</span><br><span>${timeFmt(c.second.start_time)}–${timeFmt(c.second.end_time)}</span><br><span class="muted">${esc(c.second.room_name||'Room TBA')}</span></td></tr>`).join('')}</tbody></table></div>`:`<div class="panel-body"><div class="notice"><b>No scheduling conflicts detected.</b> The upcoming defense schedule has no overlapping assignments involving the same project, student, adviser, panel member, or room. The system also checks for conflicts when a coordinator creates or updates a schedule.</div></div>`}</section>`;
 }
 
+=======
+>>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
 async function panelsView(){const d=await api('/api/panels');state.cache.panels=d.assignments||[];const canAssign=state.role==='coordinator';return `${pageHead('Assignments','Panel Assignment',state.role==='coordinator'?'Assign chairperson, panel members, and adviser roles to defense schedules.':state.role==='panel_member'?'Your assigned defense roles.':state.role==='student'?'Panel members assigned to your defense.':'Panel assignment for your students.',canAssign?'<button class="btn primary" data-modal="panel">Assign panel</button>':'' )}<section class="panel"><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Project</th><th>Member</th><th>Panel role</th><th>Status</th>${canAssign?'<th>Action</th>':''}</tr></thead><tbody>${d.assignments?.length?d.assignments.map(a=>`<tr><td>${dateFmt(a.defense_date)}<br>${timeFmt(a.start_time)}</td><td><b>${esc(a.title)}</b></td><td>${esc(a.full_name)}<br><span class="muted">${esc(a.email)}</span></td><td>${esc(a.panel_role)}</td><td>${statusTag(a.status)}</td>${canAssign?`<td><button class="btn danger-btn" data-panel-delete="${a.id}">Remove</button></td>`:''}</tr>`).join(''):'<tr><td colspan="5"><div class="empty">No panel assignments found.</div></td></tr>'}</tbody></table></div></section>`}
 
 async function roomsView(){const d=await api('/api/rooms');return `${pageHead('Facilities','Rooms','Manage defense rooms and availability.','<button class="btn primary" data-modal="room">Add room</button>')}<section class="panel"><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Room</th><th>Location</th><th>Availability</th><th>Action</th></tr></thead><tbody>${d.rooms.map(r=>`<tr><td><b>${esc(r.name)}</b></td><td>${esc(r.location)}</td><td><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" data-room="${r.id}" ${r.is_available?'checked':''}> <span class="muted">${r.is_available?'Available':'Unavailable'}</span></label></td><td><button class="btn" data-room-edit="${r.id}">Edit</button> <button class="btn danger-btn" data-room-delete="${r.id}">Delete</button></td></tr>`).join('')}</tbody></table></div></section>`}
 
 async function evaluationsView(){const d=await api('/api/evaluations');const canSubmit=(state.role==='panel_member'||state.role==='adviser');return `${pageHead('Assessment',state.role==='student'?'Defense Result':state.role==='panel_member'?'Evaluation':'Evaluations',state.role==='student'?'Review recorded defense results and request clarification if needed.':canSubmit?'Submit confirmed evaluation and recommendations for assigned defenses.':'Review recorded defense evaluation results.',canSubmit?'<button class="btn primary" data-modal="evaluation">Submit evaluation</button>':'' )}<section class="panel"><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Defense</th><th>Evaluator</th><th>Scores</th><th>Recommendation</th><th>Result</th><th>Comments</th>${state.role==='student'?'<th>Action</th>':''}</tr></thead><tbody>${d.evaluations?.length?d.evaluations.map(e=>{const avg=((Number(e.technical_score)+Number(e.presentation_score)+Number(e.documentation_score))/3).toFixed(1);return `<tr><td><b>${esc(e.title)}</b><br>${dateFmt(e.defense_date)} · ${esc(e.defense_type)}</td><td>${esc(e.evaluator_name)}</td><td>Technical ${Number(e.technical_score).toFixed(0)}<br>Presentation ${Number(e.presentation_score).toFixed(0)}<br>Documentation ${Number(e.documentation_score).toFixed(0)}<br><b>Average ${avg}</b></td><td>${esc(e.recommendation)}</td><td>${statusTag(e.defense_result||'—')}</td><td class="muted">${esc(e.comments||'—')}</td>${state.role==='student'?`<td><button class="btn" data-clarify="${e.schedule_id}">Not satisfied / Clarify</button></td>`:''}</tr>`}).join(''):'<tr><td colspan="7"><div class="empty">No evaluation result is available.</div></td></tr>'}</tbody></table></div></section>`}
 
+<<<<<<< HEAD
 async function usersView(){const d=await api('/api/users?_='+Date.now());return `${pageHead('Administration','User Management','Create, update, deactivate, and remove system accounts. The main Coordinator / Administrator account is protected from changes by other coordinators.','<button class="btn primary" data-modal="user">Create account</button>')}<section class="panel"><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody>${d.users.map(u=>`<tr><td><div class="user-name-cell">${avatarMarkup(u)}<b>${esc(u.full_name)}</b>${u.is_primary_coordinator?'<span class="role-label"></span>':''}</div></td><td>${esc(u.email)}</td><td><span class="role-label role-label-${esc(u.role)}">${esc(roleLabel(u.role))}</span></td><td>${u.is_active?statusTag('Active'):statusTag('At Risk')}</td><td><div class="table-actions">${u.is_primary_coordinator?(u.is_active?'<span class="muted">Protected account</span>':`<button class="btn" data-user-toggle="${u.id}" data-active="false">Activate</button><span class="muted">Protected from deactivation/deletion</span>`):u.id!==state.user.id?`<button class="btn" data-user-edit="${u.id}">Edit</button><button class="btn" data-user-toggle="${u.id}" data-active="${u.is_active}">${u.is_active?'Deactivate':'Activate'}</button><button class="btn danger-btn" data-user-delete="${u.id}">Delete</button>`:'<span class="muted">Current account</span>'}</div></td></tr>`).join('')}</tbody></table></div></section>`}
+=======
+async function usersView(){const d=await api('/api/users?_='+Date.now());return `${pageHead('Administration','User Management','Create, update, deactivate, and remove system accounts. Public registration is disabled.','<button class="btn primary" data-modal="user">Create account</button>')}<section class="panel"><div class="panel-body table-wrap"><table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody>${d.users.map(u=>`<tr><td><div class="user-name-cell">${avatarMarkup(u)}<b>${esc(u.full_name)}</b></div></td><td>${esc(u.email)}</td><td><span class="role-label role-label-${esc(u.role)}">${esc(roleLabel(u.role))}</span></td><td>${u.is_active?statusTag('Active'):statusTag('At Risk')}</td><td><div class="table-actions">${u.id!==state.user.id?`<button class="btn" data-user-edit="${u.id}">Edit</button><button class="btn" data-user-toggle="${u.id}" data-active="${u.is_active}">${u.is_active?'Deactivate':'Activate'}</button><button class="btn danger-btn" data-user-delete="${u.id}">Delete</button>`:'<span class="muted">Current account</span>'}</div></td></tr>`).join('')}</tbody></table></div></section>`}
+>>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
 
 async function managementView(){const d=await api('/api/management');const completed=d.weekly.filter(w=>w.status==='Completed').length;return `${pageHead('Project controls','Project Plan','Your six required project-management documents in one workspace.','')}
 <div class="grid-4">${stat('WBS phases','7','major phases')}${stat('Project weeks','12','Aug 12 – Nov 4')}${stat('Budget',money(d.budgetTotal),'estimated total')}${stat('Completed weeks',completed,'current tracker status','accent-number')}</div>
@@ -427,7 +450,10 @@ document.addEventListener('click',async e=>{
   const roomDelete=e.target.closest('[data-room-delete]');if(roomDelete){confirmModal('Delete this room?','Rooms assigned to active defenses cannot be deleted.','Delete',`roomDelete:${roomDelete.dataset.roomDelete}`);return;}
   const reqResubmit=e.target.closest('[data-resubmit-request]');if(reqResubmit){openResubmitRequest(Number(reqResubmit.dataset.resubmitRequest));return;}
   const feedbackResubmit=e.target.closest('[data-feedback-resubmit]');if(feedbackResubmit){api(`/api/feedback/${feedbackResubmit.dataset.feedbackResubmit}/student-response`,{method:'PATCH'}).then(()=>{toast('Revision marked as resubmitted.');renderView('projects')}).catch(err=>toast(err.message));return;}
+<<<<<<< HEAD
   if(e.target.closest('[data-conflicts-refresh]')){renderView('conflicts');return;}
+=======
+>>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
   const report=e.target.closest('[data-report]');if(report){showReport(report.dataset.report);return;}
   const reportExport=e.target.closest('[data-report-export]');if(reportExport){api('/api/reports/'+reportExport.dataset.reportExport).then(d=>exportRows(d.rows||[],`report-${reportExport.dataset.reportExport}.csv`)).catch(err=>toast(err.message));return;}
   const projectDelete=e.target.closest('[data-project-delete]');if(projectDelete){confirmModal('Remove this project?','This permanently removes the project and its linked defense requests, schedules, panel assignments, evaluations, and feedback.','Remove project',`deleteProject:${projectDelete.dataset.projectDelete}`);return;}
