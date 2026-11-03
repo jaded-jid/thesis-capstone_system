@@ -92,6 +92,25 @@ function normalizeDate(value) {
   return raw.slice(0,10);
 }
 function timeMinutes(value) { const m=String(value||'').match(/^(\d{2}):(\d{2})/); return m ? Number(m[1])*60+Number(m[2]) : null; }
+function manilaNowParts(now = new Date()) {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  }).formatToParts(now).map(part => [part.type, part.value]));
+  const date = `${parts.year}-${parts.month}-${parts.day}`;
+  const minutes = Number(parts.hour) * 60 + Number(parts.minute);
+  return { date, minutes };
+}
+function assertFutureDefenseStart(date, start, now = new Date()) {
+  const current = manilaNowParts(now);
+  const startMinute = timeMinutes(start);
+  if (date < current.date) {
+    throw Object.assign(new Error('Defense schedules cannot be placed in the past. Choose today or a future date.'), { status: 400 });
+  }
+  if (date === current.date && (startMinute === null || startMinute <= current.minutes)) {
+    throw Object.assign(new Error('The defense start time has already passed. Choose a later start time in Philippine time (Asia/Manila).'), { status: 400 });
+  }
+}
 function validRole(role) {
   return ALLOWED_ROLES.includes(role);
 }
@@ -111,11 +130,7 @@ function ensureCsrf(req) { if (!req.session.csrfToken) req.session.csrfToken = c
 function requireCsrf(req,res,next){ if (['GET','HEAD','OPTIONS'].includes(req.method)) return next(); const token=String(req.get('X-CSRF-Token')||''); if(!token || token!==req.session.csrfToken) return res.status(403).json({error:'Invalid security token. Refresh the page and try again.'}); next(); }
 async function audit(userId, action, entityType, entityId, details={}) { try { await q('INSERT INTO audit_logs(user_id,action,entity_type,entity_id,details) VALUES($1,$2,$3,$4,$5)',[userId,action,entityType,entityId,details]); } catch (e) { console.error('Audit log failed:', e.message); } }
 function serializeUser(u) {
-<<<<<<< HEAD
   return { id: u.id, full_name: u.full_name, email: u.email, role: u.role, role_label: ROLE_LABELS[u.role], is_active: u.is_active, is_primary_coordinator: Boolean(u.is_primary_coordinator), profile_image: u.profile_image || null };
-=======
-  return { id: u.id, full_name: u.full_name, email: u.email, role: u.role, role_label: ROLE_LABELS[u.role], is_active: u.is_active, profile_image: u.profile_image || null };
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
 }
 
 // Keep defense-request status synchronized with the linked defense schedule.
@@ -215,14 +230,11 @@ async function ensureColumns() {
   await q(`ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_code_key`);
   await q(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS panel_proceedance TEXT NOT NULL DEFAULT 'Pending'`);
   await q(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS panel_proceeded_at TIMESTAMPTZ`);
-  await q(`ALTER TABLE rooms DROP COLUMN IF EXISTS capacity`);
+  await q(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS capacity INTEGER NOT NULL DEFAULT 30 CHECK (capacity > 0)`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS panel_availability TEXT`);
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_image TEXT`);
-<<<<<<< HEAD
   await q(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_primary_coordinator BOOLEAN NOT NULL DEFAULT FALSE`);
   await q(`CREATE UNIQUE INDEX IF NOT EXISTS users_single_primary_coordinator_uq ON users (is_primary_coordinator) WHERE is_primary_coordinator = TRUE`);
-=======
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
   await q(`ALTER TABLE result_clarifications ADD COLUMN IF NOT EXISTS resolution_note TEXT`);
   await q(`WITH ranked AS (SELECT id,ROW_NUMBER() OVER(PARTITION BY project_id ORDER BY created_at,id) rn FROM defense_requests WHERE status IN ('Pending','Approved','Scheduled')) UPDATE defense_requests d SET status='Returned',review_feedback='Superseded duplicate request.',updated_at=NOW() FROM ranked r WHERE d.id=r.id AND r.rn>1`);
   await q(`WITH ranked AS (SELECT id,ROW_NUMBER() OVER(PARTITION BY request_id ORDER BY created_at,id) rn FROM schedules WHERE request_id IS NOT NULL AND status<>'Cancelled') UPDATE schedules s SET status='Cancelled' FROM ranked r WHERE s.id=r.id AND r.rn>1`);
@@ -242,7 +254,6 @@ async function initDb() {
   const adminEmail = cleanEmail(process.env.ADMIN_EMAIL || 'admin@example.com');
   const adminPassword = String(process.env.ADMIN_PASSWORD || 'ChangeThisPasswordImmediately');
   const adminExists = await q('SELECT id FROM users WHERE lower(email)=lower($1)', [adminEmail]);
-<<<<<<< HEAD
   let configuredAdminId = adminExists.rowCount ? Number(adminExists.rows[0].id) : null;
   if (!adminExists.rowCount) {
     const hash = await bcrypt.hash(adminPassword, 12);
@@ -267,11 +278,6 @@ async function initDb() {
     if (candidate.rowCount) {
       await q('UPDATE users SET is_primary_coordinator = (id = $1) WHERE role=\'coordinator\'', [Number(candidate.rows[0].id)]);
     }
-=======
-  if (!adminExists.rowCount) {
-    const hash = await bcrypt.hash(adminPassword, 12);
-    await q('INSERT INTO users (full_name,email,password_hash,role) VALUES ($1,$2,$3,\'coordinator\')', [adminName, adminEmail, hash]);
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
   }
 
   if (process.env.SEED_DEMO_USERS === 'true') {
@@ -409,11 +415,7 @@ app.get('/api/health', async (_req,res) => {
 app.get('/api/session', async (req,res) => {
   try {
     if (!req.session.user) return res.json({ user: null });
-<<<<<<< HEAD
     const r = await q('SELECT id,full_name,email,role,is_active,is_primary_coordinator,profile_image FROM users WHERE id=$1', [req.session.user.id]);
-=======
-    const r = await q('SELECT id,full_name,email,role,is_active,profile_image FROM users WHERE id=$1', [req.session.user.id]);
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
     if (!r.rowCount) { req.session.destroy(() => {}); return res.json({ user: null }); }
     req.session.user = serializeUser(r.rows[0]);
     res.json({ user: req.session.user });
@@ -431,11 +433,7 @@ app.post('/api/login', loginLimiter, async (req,res) => {
     const role = cleanText(req.body.role, 40);
     const password = String(req.body.password || '');
     if (!email || !password || !validRole(role)) return res.status(400).json({ error: 'Select your role and enter your account credentials.' });
-<<<<<<< HEAD
     const r = await q('SELECT id,full_name,email,password_hash,role,is_active,is_primary_coordinator,profile_image FROM users WHERE lower(email)=lower($1)', [email]);
-=======
-    const r = await q('SELECT id,full_name,email,password_hash,role,is_active,profile_image FROM users WHERE lower(email)=lower($1)', [email]);
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
     if (!r.rowCount) return res.status(401).json({ error: 'Invalid account credentials.' });
     const user = r.rows[0];
     if (!user.is_active) return res.status(403).json({ error: 'This account has been deactivated. Contact your Coordinator / Administrator.' });
@@ -491,11 +489,7 @@ app.get('/api/dashboard', auth, async (req,res) => {
 // User management — Coordinator only. No public registration endpoint exists.
 app.get('/api/users', auth, requireRole('coordinator'), async (_req,res) => {
   res.set('Cache-Control','no-store, no-cache, must-revalidate, private');
-<<<<<<< HEAD
   const r = await q('SELECT id,full_name,email,role,is_active,is_primary_coordinator,created_at,updated_at,panel_availability,profile_image FROM users ORDER BY full_name');
-=======
-  const r = await q('SELECT id,full_name,email,role,is_active,created_at,updated_at,panel_availability,profile_image FROM users ORDER BY full_name');
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
   res.json({ users:r.rows });
 });
 app.get('/api/users/:id/profile-image', auth, requireRole('coordinator'), async (req,res) => {
@@ -531,11 +525,7 @@ app.post('/api/users', auth, requireRole('coordinator'), async (req,res) => {
 app.patch('/api/profile', auth, async (req,res) => {
   try {
     const id = req.session.user.id;
-<<<<<<< HEAD
     const existing = await q('SELECT id,full_name,email,password_hash,role,is_active,is_primary_coordinator,profile_image FROM users WHERE id=$1',[id]);
-=======
-    const existing = await q('SELECT id,full_name,email,password_hash,role,is_active,profile_image FROM users WHERE id=$1',[id]);
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
     if (!existing.rowCount) return res.status(404).json({ error:'Account not found.' });
     const current = existing.rows[0];
     const isCoordinator = current.role==='coordinator';
@@ -558,11 +548,7 @@ app.patch('/api/profile', auth, async (req,res) => {
       if (!valid) return res.status(400).json({ error:'Current password is incorrect.' });
       hash = await bcrypt.hash(newPassword,12);
     }
-<<<<<<< HEAD
     const r = await q('UPDATE users SET full_name=$1,email=$2,password_hash=$3,profile_image=$4,updated_at=NOW() WHERE id=$5 RETURNING id,full_name,email,role,is_active,is_primary_coordinator,profile_image',[name,email,hash,profileImage,id]);
-=======
-    const r = await q('UPDATE users SET full_name=$1,email=$2,password_hash=$3,profile_image=$4,updated_at=NOW() WHERE id=$5 RETURNING id,full_name,email,role,is_active,profile_image',[name,email,hash,profileImage,id]);
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
     if (!r.rowCount) return res.status(404).json({ error:'Account could not be updated.' });
     req.session.user = serializeUser(r.rows[0]);
     res.json({ user:req.session.user });
@@ -577,16 +563,10 @@ app.patch('/api/users/:id', auth, requireRole('coordinator'), async (req,res) =>
   try {
     const id=Number(req.params.id);
     if (!Number.isInteger(id) || id<=0) return res.status(400).json({error:'Invalid user id.'});
-<<<<<<< HEAD
     const target=await q('SELECT id,full_name,email,password_hash,role,is_active,is_primary_coordinator,panel_availability,profile_image FROM users WHERE id=$1',[id]);
     if(!target.rowCount)return res.status(404).json({error:'User not found.'});
     const user=target.rows[0];
     if (user.is_primary_coordinator) return res.status(403).json({error:'The main Coordinator / Administrator account is protected from changes through User Management. Use My Profile to update its details.'});
-=======
-    const target=await q('SELECT id,full_name,email,password_hash,role,is_active,panel_availability,profile_image FROM users WHERE id=$1',[id]);
-    if(!target.rowCount)return res.status(404).json({error:'User not found.'});
-    const user=target.rows[0];
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
     const name=cleanText(req.body.full_name,120), email=cleanEmail(req.body.email), password=String(req.body.password||''), role=cleanText(req.body.role,40);
     if(!name||!email||!validRole(role))return res.status(400).json({error:'Name and email are required.'});
     const exists=await q('SELECT id FROM users WHERE lower(email)=lower($1) AND id<>$2',[email,id]);
@@ -603,16 +583,11 @@ app.delete('/api/users/:id', auth, requireRole('coordinator'), async (req,res)=>
   try{
     const id=Number(req.params.id);
     if(!Number.isInteger(id)||id<=0)return res.status(400).json({error:'Invalid user id.'});
-<<<<<<< HEAD
     const roleCheck=await q('SELECT role,is_primary_coordinator FROM users WHERE id=$1',[id]);
     if(!roleCheck.rowCount)return res.status(404).json({error:'User not found.'});
     if(id===req.session.user.id)return res.status(400).json({error:'Your own administrator account cannot be deleted.'});
     if(roleCheck.rows[0].is_primary_coordinator)return res.status(403).json({error:'The main Coordinator / Administrator account is protected and cannot be deleted by another coordinator.'});
     if(roleCheck.rows[0].role==='coordinator'){const activeAdmins=await q("SELECT COUNT(*)::int count FROM users WHERE role='coordinator' AND is_active=true");if(Number(activeAdmins.rows[0].count)<=1)return res.status(400).json({error:'At least one active Coordinator / Administrator account must remain.'});}
-=======
-    if(id===req.session.user.id)return res.status(400).json({error:'Your own administrator account cannot be deleted.'});
-    const roleCheck=await q('SELECT role FROM users WHERE id=$1',[id]); if(roleCheck.rowCount&&roleCheck.rows[0].role==='coordinator'){const activeAdmins=await q("SELECT COUNT(*)::int count FROM users WHERE role='coordinator' AND is_active=true");if(Number(activeAdmins.rows[0].count)<=1)return res.status(400).json({error:'At least one active Coordinator / Administrator account must remain.'});}
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
     const refs=await q(`SELECT (SELECT COUNT(*)::int FROM project_members WHERE student_id=$1) AS project_refs,(SELECT COUNT(*)::int FROM panel_assignments WHERE user_id=$1) AS panel_refs,(SELECT COUNT(*)::int FROM evaluations WHERE evaluator_id=$1) AS eval_refs,(SELECT COUNT(*)::int FROM reschedule_requests WHERE requested_by=$1) AS reschedule_refs,(SELECT COUNT(*)::int FROM result_clarifications WHERE student_id=$1) AS clarification_refs,(SELECT COUNT(*)::int FROM project_feedback WHERE adviser_id=$1) AS feedback_refs`,[id]);
     const totalRefs=Object.values(refs.rows[0]).reduce((a,v)=>a+Number(v||0),0);
     if(totalRefs>0){ const r=await q('UPDATE users SET is_active=false,updated_at=NOW() WHERE id=$1 RETURNING id,full_name,email,role,is_active',[id]); if(!r.rowCount)return res.status(404).json({error:'User not found.'}); await audit(req.session.user.id,'deactivate-instead-of-delete','user',id,{reason:'Historical records exist'}); return res.json({user:r.rows[0],softDeleted:true}); }
@@ -625,7 +600,6 @@ app.delete('/api/users/:id', auth, requireRole('coordinator'), async (req,res)=>
 
 app.patch('/api/users/:id/status', auth, requireRole('coordinator'), async (req,res) => {
   const id=Number(req.params.id);
-<<<<<<< HEAD
   if (!Number.isInteger(id) || id<=0) return res.status(400).json({error:'Invalid user id.'});
   if (typeof req.body.is_active !== 'boolean') return res.status(400).json({error:'Account status must be true or false.'});
   const target=await q('SELECT id,role,is_active,is_primary_coordinator FROM users WHERE id=$1',[id]);
@@ -638,12 +612,6 @@ app.patch('/api/users/:id/status', auth, requireRole('coordinator'), async (req,
   const r=await q('UPDATE users SET is_active=$1,updated_at=NOW() WHERE id=$2 RETURNING id,full_name,email,role,is_active,is_primary_coordinator',[req.body.is_active,id]);
   if (!r.rowCount) return res.status(404).json({ error:'User not found.' });
   await audit(req.session.user.id, req.body.is_active ? 'activate' : 'deactivate', 'user', id, { primaryCoordinator: Boolean(r.rows[0].is_primary_coordinator) });
-=======
-  if (id===req.session.user.id) return res.status(400).json({ error:'Your own administrator account cannot be deactivated here.' });
-  if(req.body.is_active===false){const target=await q('SELECT role FROM users WHERE id=$1',[id]);if(target.rowCount&&target.rows[0].role==='coordinator'){const activeAdmins=await q("SELECT COUNT(*)::int count FROM users WHERE role='coordinator' AND is_active=true");if(Number(activeAdmins.rows[0].count)<=1)return res.status(400).json({error:'At least one active Coordinator / Administrator account must remain.'});}}
-  const r=await q('UPDATE users SET is_active=$1,updated_at=NOW() WHERE id=$2 RETURNING id,full_name,email,role,is_active',[!!req.body.is_active,id]);
-  if (!r.rowCount) return res.status(404).json({ error:'User not found.' });
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
   res.json({ user:r.rows[0] });
 });
 
@@ -717,6 +685,7 @@ app.post('/api/defense-requests', auth, requireRole('student'), async (req,res) 
   const date=cleanText(req.body.preferred_date,20), time=cleanText(req.body.preferred_time,20), reason=cleanText(req.body.reason,800);
   if (!Number.isInteger(projectId) || projectId <= 0) return res.status(400).json({ error:'Select an assigned project.' });
   if (!validDate(date) || !validTime(time)) return res.status(400).json({ error:'Enter a valid preferred date and time.' });
+  try { assertFutureDefenseStart(date, time); } catch (e) { return res.status(e.status || 400).json({ error: e.message }); }
   const owns=await q(`SELECT p.id,p.title,p.adviser_id,COALESCE(a.full_name,'Unassigned') adviser_name
                        FROM projects p LEFT JOIN users a ON a.id=p.adviser_id
                        WHERE p.id=$1 AND $2=ANY(COALESCE(p.student_ids, ARRAY[]::integer[]))`,[projectId,req.session.user.id]);
@@ -747,7 +716,8 @@ async function createAutomaticScheduleForRequest(requestId) {
   const duration=Math.max(30,Number(process.env.DEFAULT_DEFENSE_DURATION_MINUTES||120));
   const end=addMinutesToTime(start,duration);
   if(!end) throw new Error('The preferred time plus the default defense duration goes past midnight. Choose an earlier time.');
-  if(!validDate(date)||!validTime(start)) throw new Error('The requested date or time is invalid.');
+  if(!validDate(date)||!validTime(start)) throw Object.assign(new Error('The requested date or time is invalid.'),{status:400});
+  assertFutureDefenseStart(date, start);
   const conflicts=await scheduleConflictsWithClient(client,{projectId:dr.project_id,date,start,end,roomId:null});
   if(conflicts.length){const error=new Error('The preferred date and time conflicts with another defense, student, adviser, panel, or room schedule. Resolve the conflict before approving this request.');error.code='SCHEDULE_CONFLICT';throw error;}
   const existing=await client.query("SELECT id FROM schedules WHERE request_id=$1 AND status<>'Cancelled' LIMIT 1",[requestId]); if(existing.rowCount) return existing.rows[0];
@@ -777,6 +747,7 @@ app.patch('/api/defense-requests/:id/review', auth, requireRole('coordinator'), 
       return res.json({ request:r.rows[0], schedule, scheduledAutomatically:true });
     } catch (e) {
       if (e.code==='SCHEDULE_CONFLICT') return res.status(409).json({error:e.message});
+      if (e.status) return res.status(e.status).json({error:e.message});
       console.error('Approve/proceed defense request failed:', e);
       return res.status(500).json({error:'Unable to proceed to defense and create the automatic schedule. Please verify the requested date/time and try again.'});
     }
@@ -791,10 +762,11 @@ app.patch('/api/defense-requests/:id/review', auth, requireRole('coordinator'), 
   res.json({ request:r.rows[0], scheduledAutomatically:false });
 });
 
-// Rooms — capacity is intentionally not part of the system.
+// Student resubmission of returned defense requests.
 app.patch('/api/defense-requests/:id/resubmit', auth, requireRole('student'), async(req,res)=>{
  const id=Number(req.params.id), date=normalizeDate(req.body.preferred_date), time=cleanText(req.body.preferred_time,20), reason=cleanText(req.body.reason,800);
  if(!validDate(date)||!validTime(time))return res.status(400).json({error:'Enter a valid preferred date and time.'});
+ try { assertFutureDefenseStart(date, time); } catch (e) { return res.status(e.status || 400).json({error:e.message}); }
  const own=await q(`SELECT dr.id,p.student_ids FROM defense_requests dr JOIN projects p ON p.id=dr.project_id WHERE dr.id=$1 AND $2=ANY(p.student_ids)`,[id,req.session.user.id]);
  if(!own.rowCount)return res.status(403).json({error:'You can only revise a request for your own project.'});
  const r=await q("UPDATE defense_requests SET preferred_date=$1,preferred_time=$2,reason=$3,status='Pending',review_feedback=NULL,updated_at=NOW() WHERE id=$4 AND status='Returned' RETURNING *",[date,time,reason,id]);
@@ -802,13 +774,14 @@ app.patch('/api/defense-requests/:id/resubmit', auth, requireRole('student'), as
  await audit(req.session.user.id,'resubmit','defense_request',id,{}); res.json({request:r.rows[0]});
 });
 
+// Room Management — coordinators can maintain room capacity and availability.
 app.get('/api/rooms', auth, requireRole('coordinator'), async (req,res)=>{
   const date=normalizeDate(req.query.date||'');
   const start=cleanText(req.query.start||'',20);
   const end=cleanText(req.query.end||'',20);
   const excludeId=Number(req.query.exclude_id)||null;
   const hasSlot=validDate(date)&&validTime(start)&&validTime(end)&&timeMinutes(start)<timeMinutes(end);
-  let rooms=(await q('SELECT id,name,location,is_available FROM rooms ORDER BY name')).rows;
+  let rooms=(await q('SELECT id,name,location,capacity,is_available FROM rooms ORDER BY name')).rows;
   if(hasSlot){
     const args=[date,start,end];
     let extra='';
@@ -823,11 +796,28 @@ app.get('/api/rooms', auth, requireRole('coordinator'), async (req,res)=>{
 });
 app.post('/api/rooms', auth, requireRole('coordinator'), async(req,res)=>{
   const name=cleanText(req.body.name,100), location=cleanText(req.body.location,160);
+  const capacity=Number(req.body.capacity);
   if(!name||!location)return res.status(400).json({error:'Room name and location are required.'});
-  try { const r=await q('INSERT INTO rooms(name,location,is_available) VALUES($1,$2,true) RETURNING *',[name,location]); res.status(201).json({room:r.rows[0]}); }
+  if(!validPositiveInt(capacity)||capacity>10000)return res.status(400).json({error:'Room capacity must be a whole number between 1 and 10000 people.'});
+  try { const r=await q('INSERT INTO rooms(name,location,capacity,is_available) VALUES($1,$2,$3,true) RETURNING *',[name,location,capacity]); res.status(201).json({room:r.rows[0]}); }
   catch { res.status(409).json({error:'A room with this name already exists.'}); }
 });
-app.patch('/api/rooms/:id', auth, requireRole('coordinator'), async(req,res)=>{ const id=Number(req.params.id); const name=cleanText(req.body.name,100), location=cleanText(req.body.location,160); const hasName=Object.prototype.hasOwnProperty.call(req.body,'name'); const hasLocation=Object.prototype.hasOwnProperty.call(req.body,'location'); const hasAvail=Object.prototype.hasOwnProperty.call(req.body,'is_available'); try{ const r=await q(`UPDATE rooms SET name=CASE WHEN $1 THEN $2 ELSE name END, location=CASE WHEN $3 THEN $4 ELSE location END, is_available=CASE WHEN $5 THEN $6 ELSE is_available END WHERE id=$7 RETURNING *`,[hasName,name,hasLocation,location,hasAvail,!!req.body.is_available,id]); if(!r.rowCount)return res.status(404).json({error:'Room not found.'}); await audit(req.session.user.id,'update','room',id,{});res.json({room:r.rows[0]}); }catch(e){res.status(409).json({error:'Unable to update room. The room name may already exist or the room is still in use.'});} });
+app.patch('/api/rooms/:id', auth, requireRole('coordinator'), async(req,res)=>{
+  const id=Number(req.params.id);
+  const name=cleanText(req.body.name,100), location=cleanText(req.body.location,160);
+  const hasName=Object.prototype.hasOwnProperty.call(req.body,'name');
+  const hasLocation=Object.prototype.hasOwnProperty.call(req.body,'location');
+  const hasAvail=Object.prototype.hasOwnProperty.call(req.body,'is_available');
+  const hasCapacity=Object.prototype.hasOwnProperty.call(req.body,'capacity');
+  const capacity=hasCapacity?Number(req.body.capacity):null;
+  if(hasCapacity&&(!validPositiveInt(capacity)||capacity>10000))return res.status(400).json({error:'Room capacity must be a whole number between 1 and 10000 people.'});
+  try{
+    const r=await q(`UPDATE rooms SET name=CASE WHEN $1 THEN $2 ELSE name END, location=CASE WHEN $3 THEN $4 ELSE location END, is_available=CASE WHEN $5 THEN $6 ELSE is_available END, capacity=CASE WHEN $7 THEN $8 ELSE capacity END WHERE id=$9 RETURNING *`,[hasName,name,hasLocation,location,hasAvail,!!req.body.is_available,hasCapacity,capacity,id]);
+    if(!r.rowCount)return res.status(404).json({error:'Room not found.'});
+    await audit(req.session.user.id,'update','room',id,{capacity:hasCapacity?capacity:undefined});
+    res.json({room:r.rows[0]});
+  }catch(e){res.status(409).json({error:'Unable to update room. The room name may already exist or the room is still in use.'});}
+});
 app.delete('/api/rooms/:id', auth, requireRole('coordinator'), async(req,res)=>{const id=Number(req.params.id);const used=await q("SELECT COUNT(*)::int count FROM schedules WHERE room_id=$1 AND status<>'Cancelled'",[id]);if(Number(used.rows[0].count)>0)return res.status(409).json({error:'This room is assigned to an active defense. Mark it unavailable instead of deleting it.'});const r=await q('DELETE FROM rooms WHERE id=$1 RETURNING id,name',[id]);if(!r.rowCount)return res.status(404).json({error:'Room not found.'});await audit(req.session.user.id,'delete','room',id,{});res.json({room:r.rows[0]});});
 
 async function scheduleConflicts({projectId,date,start,end,roomId,excludeId=null}) {
@@ -859,7 +849,6 @@ app.get('/api/schedules', auth, async(req,res)=>{
  const r=await q(`SELECT s.id,s.project_id,s.request_id,s.defense_type,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.start_time,s.end_time,s.room_id,s.status,s.defense_result,s.panel_proceedance,s.panel_proceeded_at,s.notes,s.created_at,p.title,p.type,p.adviser_id,COALESCE(a.full_name,'Unassigned') adviser_name,r.name room_name FROM schedules s JOIN projects p ON p.id=s.project_id LEFT JOIN users a ON a.id=p.adviser_id LEFT JOIN rooms r ON r.id=s.room_id ${where} ORDER BY s.defense_date,s.start_time`,params);
  res.json({schedules:r.rows});
 });
-<<<<<<< HEAD
 // Conflict Detection — coordinator-only overview of clashes already present in upcoming schedules.
 app.get('/api/schedule-conflicts', auth, requireRole('coordinator'), async(_req,res)=>{
  try{
@@ -922,12 +911,11 @@ app.get('/api/schedule-conflicts', auth, requireRole('coordinator'), async(_req,
  }
 });
 
-=======
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
 async function saveSchedule(payload, userId, excludeId=null){
  const projectId=Number(payload.project_id),requestId=Number(payload.request_id)||null,date=normalizeDate(payload.defense_date),start=cleanText(payload.start_time,20),end=cleanText(payload.end_time,20),roomId=Number(payload.room_id)||null,type=payload.defense_type==='Final Defense'?'Final Defense':'Proposal Defense',notes=cleanText(payload.notes,1000);
  if(!validPositiveInt(projectId)||!validDate(date)||!validTime(start)||!validTime(end))throw Object.assign(new Error('Project, date, start time, and end time are required in a valid format.'),{status:400});
  if(timeMinutes(start)>=timeMinutes(end))throw Object.assign(new Error('End time must be after start time.'),{status:400});
+ assertFutureDefenseStart(date, start);
  return withTransaction(async client=>{
   await client.query('SELECT pg_advisory_xact_lock($1)',[projectId]);
   const project=await client.query('SELECT id FROM projects WHERE id=$1',[projectId]); if(!project.rowCount)throw Object.assign(new Error('Project not found.'),{status:404});
@@ -987,7 +975,7 @@ app.delete('/api/panels/:id', auth, requireRole('coordinator'), async(req,res)=>
 
 // Panel flow: proceed or request reschedule.
 app.post('/api/schedules/:id/proceed', auth, requireRole('panel_member'), async(req,res)=>{const id=Number(req.params.id);const member=await q('SELECT id FROM panel_assignments WHERE schedule_id=$1 AND user_id=$2',[id,req.session.user.id]);if(!member.rowCount)return res.status(403).json({error:'You are not assigned to this defense.'});const current=await q("SELECT id,status,panel_proceedance FROM schedules WHERE id=$1",[id]);if(!current.rowCount||current.rows[0].status!=='Upcoming')return res.status(409).json({error:'Only an upcoming defense can be marked to proceed.'});const r=await q("UPDATE schedules SET panel_proceedance='Proceed',panel_proceeded_at=NOW() WHERE id=$1 RETURNING id,project_id,request_id,defense_type,to_char(defense_date,'YYYY-MM-DD') AS defense_date,start_time,end_time,room_id,status,defense_result,panel_proceedance,panel_proceeded_at,notes,created_at",[id]);await audit(req.session.user.id,'proceed','schedule',id,{});res.json({schedule:r.rows[0]});});
-app.post('/api/reschedule-requests', auth, requireRole('panel_member'), async(req,res)=>{const scheduleId=Number(req.body.schedule_id),reason=cleanText(req.body.reason,1000),preferredDate=normalizeDate(req.body.preferred_date),preferredTime=cleanText(req.body.preferred_time,20);const member=await q('SELECT id FROM panel_assignments WHERE schedule_id=$1 AND user_id=$2',[scheduleId,req.session.user.id]);if(!member.rowCount)return res.status(403).json({error:'You are not assigned to this defense.'});if(!reason||!validDate(preferredDate)||!validTime(preferredTime))return res.status(400).json({error:'Provide a valid preferred date, time, and reason.'});const active=await q("SELECT id,status FROM schedules WHERE id=$1 AND status='Upcoming'",[scheduleId]);if(!active.rowCount)return res.status(409).json({error:'Only an upcoming defense can be rescheduled.'});const duplicate=await q("SELECT id FROM reschedule_requests WHERE schedule_id=$1 AND status='Pending'",[scheduleId]);if(duplicate.rowCount)return res.status(409).json({error:'A reschedule request is already pending for this defense.'});const r=await q('INSERT INTO reschedule_requests(schedule_id,requested_by,reason,preferred_date,preferred_time) VALUES($1,$2,$3,$4,$5) RETURNING *',[scheduleId,req.session.user.id,reason,preferredDate,preferredTime]);await q("UPDATE schedules SET panel_proceedance='Reschedule Requested' WHERE id=$1",[scheduleId]);await audit(req.session.user.id,'request-reschedule','schedule',scheduleId,{preferred_date:preferredDate,preferred_time:preferredTime});res.status(201).json({request:r.rows[0]});});
+app.post('/api/reschedule-requests', auth, requireRole('panel_member'), async(req,res)=>{const scheduleId=Number(req.body.schedule_id),reason=cleanText(req.body.reason,1000),preferredDate=normalizeDate(req.body.preferred_date),preferredTime=cleanText(req.body.preferred_time,20);const member=await q('SELECT id FROM panel_assignments WHERE schedule_id=$1 AND user_id=$2',[scheduleId,req.session.user.id]);if(!member.rowCount)return res.status(403).json({error:'You are not assigned to this defense.'});if(!reason||!validDate(preferredDate)||!validTime(preferredTime))return res.status(400).json({error:'Provide a valid preferred date, time, and reason.'});try{assertFutureDefenseStart(preferredDate,preferredTime)}catch(e){return res.status(e.status||400).json({error:e.message})}const active=await q("SELECT id,status FROM schedules WHERE id=$1 AND status='Upcoming'",[scheduleId]);if(!active.rowCount)return res.status(409).json({error:'Only an upcoming defense can be rescheduled.'});const duplicate=await q("SELECT id FROM reschedule_requests WHERE schedule_id=$1 AND status='Pending'",[scheduleId]);if(duplicate.rowCount)return res.status(409).json({error:'A reschedule request is already pending for this defense.'});const r=await q('INSERT INTO reschedule_requests(schedule_id,requested_by,reason,preferred_date,preferred_time) VALUES($1,$2,$3,$4,$5) RETURNING *',[scheduleId,req.session.user.id,reason,preferredDate,preferredTime]);await q("UPDATE schedules SET panel_proceedance='Reschedule Requested' WHERE id=$1",[scheduleId]);await audit(req.session.user.id,'request-reschedule','schedule',scheduleId,{preferred_date:preferredDate,preferred_time:preferredTime});res.status(201).json({request:r.rows[0]});});
 app.get('/api/reschedule-requests', auth, requireRole('coordinator'), async(_req,res)=>{const r=await q(`SELECT rr.*,u.full_name requester_name,to_char(rr.preferred_date,'YYYY-MM-DD') preferred_date,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.start_time,s.end_time,p.title FROM reschedule_requests rr JOIN users u ON u.id=rr.requested_by JOIN schedules s ON s.id=rr.schedule_id JOIN projects p ON p.id=s.project_id ORDER BY rr.created_at DESC`);res.json({requests:r.rows});});
 app.patch('/api/reschedule-requests/:id', auth, requireRole('coordinator'), async(req,res)=>{const id=Number(req.params.id),status=['Approved','Rejected'].includes(req.body.status)?req.body.status:null;if(!status)return res.status(400).json({error:'Invalid status.'});const rr=await q('SELECT * FROM reschedule_requests WHERE id=$1',[id]);if(!rr.rowCount)return res.status(404).json({error:'Request not found.'});if(rr.rows[0].status!=='Pending')return res.status(409).json({error:'This reschedule request has already been handled.'});if(status==='Rejected'){const r=await q("UPDATE reschedule_requests SET status='Rejected',updated_at=NOW() WHERE id=$1 RETURNING *",[id]);await q("UPDATE schedules SET panel_proceedance='Pending' WHERE id=$1 AND status='Upcoming'",[rr.rows[0].schedule_id]);await audit(req.session.user.id,'reject-reschedule','reschedule_request',id,{});return res.json({request:r.rows[0]});}
  const old=await q(`SELECT * FROM schedules WHERE id=$1`,[rr.rows[0].schedule_id]);if(!old.rowCount)return res.status(404).json({error:'Original schedule not found.'});

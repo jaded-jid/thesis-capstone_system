@@ -4,24 +4,18 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL CHECK (role IN ('coordinator','student','adviser','panel_member')),
-<<<<<<< HEAD
   is_primary_coordinator BOOLEAN NOT NULL DEFAULT FALSE,
-=======
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   profile_image TEXT
 );
 
-<<<<<<< HEAD
 -- Add this column safely when applying the schema to an existing database.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_primary_coordinator BOOLEAN NOT NULL DEFAULT FALSE;
 CREATE UNIQUE INDEX IF NOT EXISTS users_single_primary_coordinator_uq
   ON users (is_primary_coordinator) WHERE is_primary_coordinator = TRUE;
 
-=======
->>>>>>> 5385c8a821f0706fb7b3125ed592c5093110853e
 CREATE TABLE IF NOT EXISTS projects (
   id SERIAL PRIMARY KEY,
   code TEXT,
@@ -54,6 +48,7 @@ CREATE TABLE IF NOT EXISTS rooms (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   location TEXT NOT NULL,
+  capacity INTEGER NOT NULL DEFAULT 30 CHECK (capacity > 0),
   is_available BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
