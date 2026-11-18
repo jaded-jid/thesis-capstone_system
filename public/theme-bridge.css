@@ -732,3 +732,47 @@ body:not(.dark-mode).theme-panel .btn.primary,
 body:not(.dark-mode).theme-panel .profile-modal .modal-actions .btn.primary { background:#A97955 !important; color:#fff !important; border-color:#A97955 !important; }
 body:not(.dark-mode).theme-coordinator .btn.primary,
 body:not(.dark-mode).theme-coordinator .profile-modal .modal-actions .btn.primary { background:#D45A57 !important; color:#fff !important; border-color:#D45A57 !important; }
+
+/* Adviser project-phase cards: preserve contrast in light and dark themes. */
+body:not(.dark-mode) .adviser-project-card{background:#fff!important;border-color:#e3e7ed!important;box-shadow:0 4px 14px rgba(16,24,40,.035)}
+body:not(.dark-mode) .adviser-project-name b{color:#20242c!important}
+body:not(.dark-mode) .adviser-project-name small{color:#747d8b!important}
+body:not(.dark-mode) .adviser-project-current{background:#f4f6ff!important;border-color:#e1e5ff!important}
+body:not(.dark-mode) .adviser-project-current span{color:#6d7484!important}
+body:not(.dark-mode) .adviser-project-current strong{color:#353d78!important}
+body:not(.dark-mode) .adviser-project-current p{color:#5e6675!important}
+body:not(.dark-mode) .project-phase-step i{background:#e2e6ed!important}
+body:not(.dark-mode) .project-phase-step.is-done i{background:#79ad95!important}
+body:not(.dark-mode) .project-phase-step.is-current i{background:#5e6ad2!important}
+body:not(.dark-mode) .project-phase-step small{color:#7b8492!important}
+body:not(.dark-mode) .project-phase-step.is-current small{color:#4651ad!important}
+body:not(.dark-mode) .status.pendingconfirmation,body:not(.dark-mode) .status.reschedulerequested{background:#fff3dc!important;color:#8d5a12!important}
+body:not(.dark-mode) .status.pendingevaluation{background:#edf0ff!important;color:#4d59b8!important}
+body:not(.dark-mode) .status.notconducted{background:#fcebed!important;color:#a63e52!important}
+body:not(.dark-mode) .status.ongoing{background:#e8f5ef!important;color:#2c795a!important}
+body:not(.dark-mode) .status.requirements,body:not(.dark-mode) .status.design{background:#edf0ff!important;color:#4d59b8!important}
+body:not(.dark-mode) .status.testing{background:#fff3dc!important;color:#8d5a12!important}
+
+/* Light-theme contrast for the overall project-plan timeline summary. */
+body:not(.dark-mode) .project-plan-status{background:#f7f8fb!important;border-color:#e3e7ed!important}
+body:not(.dark-mode) .project-plan-status-copy span{color:#6d7484!important}
+body:not(.dark-mode) .project-plan-status-copy strong{color:#20242c!important}
+body:not(.dark-mode) .project-plan-status-copy small{color:#737d8b!important}
+
+
+/* Adviser dashboard contrast/alignment fix. Student rows must not inherit
+   the legacy pale .mini-row background or its narrow first grid column. */
+body.dark-mode .adviser-student-row{background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.075)!important}
+body.dark-mode .adviser-student-copy b{color:#E9ECF2!important}
+body.dark-mode .adviser-student-copy small{color:#A5ADBA!important}
+body.dark-mode .adviser-student-avatar{background:rgba(76,142,216,.18)!important;color:#A8D0F7!important}
+body:not(.dark-mode) .adviser-student-row{background:#F7F9FC!important;border-color:#E3E8F0!important;box-shadow:0 2px 8px rgba(20,30,50,.035)}
+body:not(.dark-mode) .adviser-student-copy b{color:#202936!important}
+body:not(.dark-mode) .adviser-student-copy small{color:#667386!important}
+body:not(.dark-mode) .adviser-student-avatar{background:#E6F0FB!important;color:#356FA8!important}
+body.dark-mode .adviser-project-students{background:rgba(255,255,255,.025)!important;border-color:rgba(255,255,255,.055)!important}
+body.dark-mode .adviser-project-students span{color:#858D9A!important}
+body.dark-mode .adviser-project-students strong{color:#D7DBE3!important}
+body:not(.dark-mode) .adviser-project-students{background:#F7F9FC!important;border-color:#E3E8F0!important}
+body:not(.dark-mode) .adviser-project-students span{color:#778294!important}
+body:not(.dark-mode) .adviser-project-students strong{color:#303B4B!important}

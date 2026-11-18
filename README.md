@@ -4,6 +4,7 @@ This is the redesigned full-stack implementation of the thesis/capstone defense 
 
 ## Core workflows
 - Coordinator / Administrator manages users, projects, defense requests, schedules, rooms, panels, evaluations, and reports.
+- A student and an adviser can each be assigned to only one existing project at a time; both the project form and server enforce this rule.
 - Student submits a proposal/final defense request using an assigned project, preferred date, and preferred time.
 - Adviser or Coordinator can approve a pending request; approval automatically creates the schedule from the student's requested date/time.
 - A Coordinator may also create or edit a defense schedule manually.
@@ -14,7 +15,9 @@ This is the redesigned full-stack implementation of the thesis/capstone defense 
 - Students can request result clarification; advisers can resolve the clarification with a response.
 
 ## Project management records
-The Coordinator has access to the supplied WBS, Gantt Chart, Budget Plan, Risk Register, System Flowchart, and Weekly Tracker. The seed data follows the submitted project documents; the weekly tracker starts with Weeks 1–4 completed.
+The Coordinator has access to the supplied WBS, Gantt Chart, Budget Plan, Risk Register, System Flowchart, and Weekly Tracker. The Weekly Tracker is the source of truth for the mapped WBS and Gantt task statuses and progress; changing a week refreshes the linked work packages and activities. The seed data follows the submitted project documents; the weekly tracker starts with Weeks 1–4 completed.
+
+Room assignment changes are made through **Edit schedule** in Defense Scheduling so the date, time, room availability, and conflict checks are validated together.
 
 ## Security and account model
 - There is no public registration endpoint.

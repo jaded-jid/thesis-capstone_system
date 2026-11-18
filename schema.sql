@@ -66,6 +66,9 @@ CREATE TABLE IF NOT EXISTS schedules (
   defense_result TEXT CHECK (defense_result IN ('Passed','Failed','For Revision','Re-defense Required')),
   panel_proceedance TEXT NOT NULL DEFAULT 'Pending' CHECK (panel_proceedance IN ('Pending','Proceed','Reschedule Requested')),
   panel_proceeded_at TIMESTAMPTZ,
+  panel_outcome TEXT CHECK (panel_outcome IN ('Conducted','Not Conducted')),
+  panel_outcome_at TIMESTAMPTZ,
+  panel_outcome_note TEXT,
   notes TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

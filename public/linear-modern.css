@@ -306,3 +306,56 @@ body.theme-student #authRoot .hero-role span,body.theme-adviser #authRoot .hero-
 
 /* Restore the Light / Dark control; role color changes its active emphasis. */
 .theme-toggle{display:inline-flex!important}
+
+/* Clear adviser project phases and post-defense status workflow */
+.adviser-project-scroll{max-height:340px}
+.adviser-project-card{padding:13px 11px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(255,255,255,.025);margin-bottom:10px}
+.adviser-project-card:last-child{margin-bottom:0}
+.adviser-project-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.adviser-project-name{min-width:0}
+.adviser-project-name b{display:block;color:#ECEEF2;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+.adviser-project-name small{display:block;color:#7F8591;font-size:10px;margin-top:3px}
+.adviser-project-phase-badge{flex:0 0 auto}
+.adviser-project-current{margin-top:12px;padding:10px 11px;border-radius:9px;background:rgba(94,106,210,.08);border:1px solid rgba(94,106,210,.15)}
+.adviser-project-current span{display:block;color:#8D94A2;font:500 9px/1.2 "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase}
+.adviser-project-current strong{display:block;color:#E3E6F3;font-size:12px;margin-top:5px}
+.adviser-project-current p{margin:5px 0 0;color:#9AA1AE;font-size:10px;line-height:1.5}
+.project-phase-steps{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin-top:12px}
+.project-phase-step{display:flex;min-width:0;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.project-phase-step i{display:block;width:100%;height:4px;border-radius:99px;background:rgba(255,255,255,.10)}
+.project-phase-step small{color:#727987;font-size:8px;line-height:1.2;overflow-wrap:anywhere}
+.project-phase-step.is-done i{background:#6D9C88}
+.project-phase-step.is-current i{background:#8B91E8;box-shadow:0 0 0 2px rgba(139,145,232,.12)}
+.project-phase-step.is-current small{color:#D6D9FF;font-weight:700}
+.panel-outcome-actions{display:flex;justify-content:flex-end;align-items:center;gap:6px;flex-wrap:wrap;min-width:190px}
+.panel-outcome-actions .btn{white-space:nowrap}
+.schedule-outcome-note{display:inline-block;max-width:230px;margin-top:4px;line-height:1.45}
+.status.pendingconfirmation,.status.reschedulerequested{background:rgba(215,164,84,.13);color:#E7BD79}
+.status.pendingevaluation{background:rgba(94,106,210,.16);color:#C3C8FF}
+.status.notconducted{background:rgba(213,102,120,.15);color:#F0AAB7}
+.status.ongoing{background:rgba(86,170,137,.16);color:#9FDBBE}
+@media(max-width:760px){.adviser-project-top{align-items:flex-start}.project-phase-step small{font-size:7px}.panel-outcome-actions{justify-content:flex-start;min-width:0}.adviser-project-card{padding:11px 9px}}
+.status.requirements,.status.design{background:rgba(94,106,210,.10);color:#AEB5FF}
+.status.testing{background:rgba(215,164,84,.13);color:#E7BD79}
+
+/* Explicitly separate the overall project-plan deadline from a project's working phase. */
+.project-plan-status{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 13px;margin-bottom:12px;border:1px solid rgba(255,255,255,.09);border-radius:10px;background:rgba(255,255,255,.035)}
+.project-plan-status-copy{min-width:0;display:flex;flex-direction:column;gap:4px}
+.project-plan-status-copy span{color:#9299A6;font:500 9px/1.2 "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase}
+.project-plan-status-copy strong{color:#ECEEF2;font-size:12px}
+.project-plan-status-copy small{color:#858D9A;font-size:10px}
+@media(max-width:520px){.project-plan-status{align-items:flex-start;flex-direction:column}}
+
+
+/* Adviser dashboard: full-width student rows with theme-safe contrast. */
+.adviser-student-list{display:grid;gap:9px;min-width:0}
+.adviser-student-row{box-sizing:border-box;display:grid;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:11px;width:100%;min-width:0;margin:0;padding:11px 12px;border:1px solid rgba(255,255,255,.075);border-radius:11px;background:rgba(255,255,255,.035)}
+.adviser-student-avatar{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:rgba(76,142,216,.18);color:#9CC8F5;font:700 11px/1 "Inter",system-ui,sans-serif;letter-spacing:.02em}
+.adviser-student-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.adviser-student-copy b{display:block;min-width:0;color:#E9ECF2;font-size:11px;line-height:1.35;overflow-wrap:anywhere}
+.adviser-student-copy small{display:block;min-width:0;color:#9AA2B0;font-size:10px;line-height:1.4;overflow-wrap:anywhere}
+.adviser-project-students{display:flex;flex-direction:column;gap:4px;margin-top:9px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055);min-width:0}
+.adviser-project-students span{font:500 8px/1.2 "JetBrains Mono",monospace;letter-spacing:.09em;text-transform:uppercase;color:#858D9A}
+.adviser-project-students strong{font-size:10px;line-height:1.4;color:#D7DBE3;overflow-wrap:anywhere}
+.adviser-student-list .empty{min-height:110px;display:grid;place-items:center}
+@media(max-width:760px){.adviser-student-row{grid-template-columns:34px minmax(0,1fr);padding:10px}.adviser-student-avatar{width:32px;height:32px}}
