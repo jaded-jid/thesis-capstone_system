@@ -1,0 +1,339 @@
+/* =====================================================================
+   FIXED LIGHT APPEARANCE
+   No theme switcher or dark-mode state. Keep high-contrast text, controls,
+   tables, panels, dialogs, and the landing/login screen readable everywhere.
+   ===================================================================== */
+:root {
+  color-scheme: light;
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --ink: #202936;
+  --muted: #586579;
+  --line: #e1e6ee;
+  --accent: #5364c8;
+  --accent2: #4658bd;
+  --deep: #202936;
+  --deep2: #303b4b;
+  --shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 28px rgba(16,24,40,.06);
+}
+
+html, body {
+  background: var(--bg) !important;
+  color: var(--ink) !important;
+  color-scheme: light !important;
+}
+body { background: var(--bg) !important; }
+body::before {
+  background-image: radial-gradient(circle at 1px 1px, rgba(35,48,67,.055) 1px, transparent 1px) !important;
+  opacity: .24 !important;
+}
+
+/* App frame and navigation */
+body:not(.dark-mode) #appRoot:not(.hidden) { background: var(--bg) !important; color: var(--ink) !important; }
+body:not(.dark-mode) #appRoot .sidebar {
+  background: #ffffff !important;
+  color: #263445 !important;
+  border-right: 1px solid #e1e6ee !important;
+  box-shadow: 8px 0 24px rgba(16,24,40,.035) !important;
+  backdrop-filter: none !important;
+}
+body:not(.dark-mode) #appRoot .brand-lockup strong,
+body:not(.dark-mode) #appRoot .sidebar .brand-lockup strong { color: #202936 !important; }
+body:not(.dark-mode) #appRoot .brand-lockup small,
+body:not(.dark-mode) #appRoot .sidebar .brand-lockup small { color: #657286 !important; }
+body:not(.dark-mode) #appRoot .identity-card {
+  background: #f7f9fc !important;
+  border-color: #e2e7ef !important;
+  color: #202936 !important;
+}
+body:not(.dark-mode) #appRoot .identity-card b,
+body:not(.dark-mode) #appRoot .identity-profile b { color: #202936 !important; }
+body:not(.dark-mode) #appRoot .identity-card small,
+body:not(.dark-mode) #appRoot .identity-profile small { color: #5d6b7e !important; }
+body:not(.dark-mode) #appRoot .nav-group { color: #667386 !important; }
+body:not(.dark-mode) #appRoot .nav-btn { color: #455367 !important; }
+body:not(.dark-mode) #appRoot .nav-btn .nav-icon { color: #667386 !important; }
+body:not(.dark-mode) #appRoot .nav-btn:hover { background: #f2f5fa !important; color: #202936 !important; }
+body:not(.dark-mode) #appRoot .nav-btn.active {
+  background: var(--role-accent-soft, #eef0ff) !important;
+  color: var(--role-accent, #4658bd) !important;
+  box-shadow: inset 3px 0 0 var(--role-accent, #5364c8) !important;
+}
+body:not(.dark-mode) #appRoot .nav-btn.active .nav-icon { color: var(--role-accent, #4658bd) !important; }
+body:not(.dark-mode) #appRoot .side-caption,
+body:not(.dark-mode) #appRoot .logout-btn { color: #526176 !important; }
+body:not(.dark-mode) #appRoot .logout-btn:hover { background: #f2f5fa !important; color: #202936 !important; }
+
+body:not(.dark-mode) #appRoot .workspace,
+body:not(.dark-mode) #appRoot .content { background: var(--bg) !important; color: var(--ink) !important; }
+body:not(.dark-mode) #appRoot .topbar {
+  background: rgba(255,255,255,.96) !important;
+  border-bottom: 1px solid #e1e6ee !important;
+  box-shadow: 0 2px 10px rgba(16,24,40,.025) !important;
+  backdrop-filter: blur(12px) !important;
+}
+body:not(.dark-mode) #appRoot .topbar h1,
+body:not(.dark-mode) #appRoot .page-intro h2 { color: #202936 !important; }
+body:not(.dark-mode) #appRoot .micro,
+body:not(.dark-mode) #appRoot .date-chip { color: #59677a !important; }
+body:not(.dark-mode) #appRoot .page-intro p { color: #536176 !important; }
+
+/* Cards and page content */
+body:not(.dark-mode) #appRoot .panel,
+body:not(.dark-mode) #appRoot .stat-card,
+body:not(.dark-mode) #appRoot .project-card,
+body:not(.dark-mode) #appRoot .report-card,
+body:not(.dark-mode) #appRoot .adviser-project-card,
+body:not(.dark-mode) #appRoot .adviser-student-row {
+  background: #ffffff !important;
+  color: #263445 !important;
+  border-color: #e1e6ee !important;
+  box-shadow: 0 1px 2px rgba(16,24,40,.035), 0 8px 24px rgba(16,24,40,.045) !important;
+}
+body:not(.dark-mode) #appRoot .panel::after,
+body:not(.dark-mode) #appRoot .modal::after { display: none !important; }
+body:not(.dark-mode) #appRoot .panel-head {
+  background: #f9fafc !important;
+  border-bottom: 1px solid #e5e9f0 !important;
+}
+body:not(.dark-mode) #appRoot .panel-head h3,
+body:not(.dark-mode) #appRoot .panel h3,
+body:not(.dark-mode) #appRoot .stat-card strong,
+body:not(.dark-mode) #appRoot .project-title,
+body:not(.dark-mode) #appRoot .timeline-main b,
+body:not(.dark-mode) #appRoot .request-main b,
+body:not(.dark-mode) #appRoot .adviser-student-copy b,
+body:not(.dark-mode) #appRoot .adviser-project-name b { color: #202936 !important; }
+body:not(.dark-mode) #appRoot .panel-head span,
+body:not(.dark-mode) #appRoot .stat-card small,
+body:not(.dark-mode) #appRoot .stat-card em,
+body:not(.dark-mode) #appRoot .muted,
+body:not(.dark-mode) #appRoot .hint,
+body:not(.dark-mode) #appRoot .field-note,
+body:not(.dark-mode) #appRoot .empty,
+body:not(.dark-mode) #appRoot .timeline-main small,
+body:not(.dark-mode) #appRoot .request-main small,
+body:not(.dark-mode) #appRoot .adviser-student-copy small,
+body:not(.dark-mode) #appRoot .adviser-project-name small { color: #59677a !important; }
+body:not(.dark-mode) #appRoot .data-table th {
+  background: #f2f5f9 !important;
+  color: #4f5d70 !important;
+  border-color: #e1e6ee !important;
+}
+body:not(.dark-mode) #appRoot .data-table td {
+  background: #ffffff;
+  color: #263445 !important;
+  border-color: #e8ecf2 !important;
+}
+body:not(.dark-mode) #appRoot .data-table tbody tr:hover { background: #f7f9fc !important; }
+body:not(.dark-mode) #appRoot .data-table td:first-child,
+body:not(.dark-mode) #appRoot .data-table .project-title,
+body:not(.dark-mode) #appRoot .row-click a { color: #344da5 !important; }
+body:not(.dark-mode) #appRoot .chip,
+body:not(.dark-mode) #appRoot .tag { background: #eef1f6 !important; color: #465367 !important; border-color: #e0e5ed !important; }
+body:not(.dark-mode) #appRoot .notice { background: #fff8e8 !important; border-color: #ead9ac !important; color: #6d531e !important; }
+
+/* Preserve semantic status colors and contrast. */
+body:not(.dark-mode) #appRoot .status { font-weight: 700 !important; border-width: 1px !important; }
+body:not(.dark-mode) #appRoot .status.planned { background: #eef1f5 !important; color: #526176 !important; border-color: #dce2ea !important; }
+body:not(.dark-mode) #appRoot .status.inprogress,
+body:not(.dark-mode) #appRoot .status.active,
+body:not(.dark-mode) #appRoot .status.pendingevaluation,
+body:not(.dark-mode) #appRoot .status.requirements,
+body:not(.dark-mode) #appRoot .status.design { background: #eaf0ff !important; color: #334fa5 !important; border-color: #d5defb !important; }
+body:not(.dark-mode) #appRoot .status.scheduled,
+body:not(.dark-mode) #appRoot .status.completed,
+body:not(.dark-mode) #appRoot .status.ongoing { background: #e8f5ee !important; color: #216747 !important; border-color: #c8e6d4 !important; }
+body:not(.dark-mode) #appRoot .status.conflict,
+body:not(.dark-mode) #appRoot .status.atrisk,
+body:not(.dark-mode) #appRoot .status.notconducted,
+body:not(.dark-mode) #appRoot .status.cancelled { background: #fff0f0 !important; color: #9c3039 !important; border-color: #f0c9cc !important; }
+body:not(.dark-mode) #appRoot .status.pendingconfirmation,
+body:not(.dark-mode) #appRoot .status.reschedulerequested,
+body:not(.dark-mode) #appRoot .status.testing { background: #fff5df !important; color: #80530d !important; border-color: #f0dfb5 !important; }
+
+/* Buttons and form controls */
+body:not(.dark-mode) #appRoot .btn:not(.primary):not(.danger-btn),
+body:not(.dark-mode) #appRoot .table-actions .btn:not(.primary):not(.danger-btn) {
+  color: #2c394a !important;
+  -webkit-text-fill-color: #2c394a !important;
+  background: #ffffff !important;
+  border-color: #d6dde7 !important;
+  text-shadow: none !important;
+}
+body:not(.dark-mode) #appRoot .btn:not(.primary):not(.danger-btn):hover {
+  color: #202936 !important;
+  background: #f2f5f9 !important;
+  border-color: #b9c4d2 !important;
+}
+body:not(.dark-mode) #appRoot .btn.primary,
+body:not(.dark-mode) #appRoot .primary-btn {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: var(--role-accent, #5364c8) !important;
+  border-color: var(--role-accent, #5364c8) !important;
+}
+body:not(.dark-mode) #appRoot .btn.danger-btn {
+  color: #a12f38 !important;
+  -webkit-text-fill-color: #a12f38 !important;
+  background: #fff7f7 !important;
+  border-color: #e8c3c6 !important;
+}
+body:not(.dark-mode) #appRoot input,
+body:not(.dark-mode) #appRoot select,
+body:not(.dark-mode) #appRoot textarea,
+body:not(.dark-mode) #modalRoot input,
+body:not(.dark-mode) #modalRoot select,
+body:not(.dark-mode) #modalRoot textarea {
+  color: #202936 !important;
+  -webkit-text-fill-color: #202936 !important;
+  background: #ffffff !important;
+  border-color: #cfd7e2 !important;
+}
+body:not(.dark-mode) #appRoot input::placeholder,
+body:not(.dark-mode) #appRoot textarea::placeholder,
+body:not(.dark-mode) #modalRoot input::placeholder,
+body:not(.dark-mode) #modalRoot textarea::placeholder {
+  color: #68768a !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #68768a !important;
+}
+body:not(.dark-mode) #appRoot label,
+body:not(.dark-mode) #modalRoot label { color: #465468 !important; }
+body:not(.dark-mode) #appRoot input:focus,
+body:not(.dark-mode) #appRoot select:focus,
+body:not(.dark-mode) #appRoot textarea:focus,
+body:not(.dark-mode) #modalRoot input:focus,
+body:not(.dark-mode) #modalRoot select:focus,
+body:not(.dark-mode) #modalRoot textarea:focus {
+  outline: none !important;
+  border-color: #6575ce !important;
+  box-shadow: 0 0 0 3px rgba(83,100,200,.14) !important;
+}
+
+/* Modal surfaces, headings, and footer bars */
+body:not(.dark-mode) #modalRoot .modal,
+.modal-backdrop .modal {
+  background: #ffffff !important;
+  color: #202936 !important;
+  border: 1px solid #dfe5ed !important;
+  box-shadow: 0 22px 60px rgba(16,24,40,.18) !important;
+}
+body:not(.dark-mode) #modalRoot .modal-head,
+.modal-backdrop .modal-head {
+  background: #f8fafc !important;
+  border-bottom-color: #e3e8ef !important;
+}
+body:not(.dark-mode) #modalRoot .modal-head h3,
+body:not(.dark-mode) #modalRoot .modal-head .micro,
+.modal-backdrop .modal-head h3 { color: #202936 !important; }
+body:not(.dark-mode) #modalRoot .modal-form,
+body:not(.dark-mode) #modalRoot .modal-actions,
+.modal-backdrop .modal-actions {
+  color: #263445 !important;
+  background: #ffffff !important;
+  border-color: #e1e6ee !important;
+}
+body:not(.dark-mode) #modalRoot .modal-close,
+.modal-backdrop .modal-close {
+  color: #3f4c5d !important;
+  background: #edf1f5 !important;
+  border-color: #dce2ea !important;
+}
+
+/* Fixed light landing/login page: no theme picker, no dark overlay or dark video. */
+#authRoot.hero-auth {
+  background: linear-gradient(135deg, #f5f7fb 0%, #edf2f8 52%, #f8fafc 100%) !important;
+  color: #202936 !important;
+}
+#authRoot .hero-auth__media { background: transparent !important; }
+#authRoot .hero-auth__media video { display: none !important; }
+#authRoot .hero-auth__media::before,
+#authRoot .hero-auth__media::after { display: none !important; }
+#authRoot .hero-auth__scrim { display: none !important; }
+#authRoot .hero-bg-orbit--one,
+#authRoot .hero-bg-orbit--two { opacity: .16 !important; border-color: rgba(83,100,200,.22) !important; }
+#authRoot .hero-bg-scan { display: none !important; }
+#authRoot .hero-auth__nav { color: #202936 !important; }
+#authRoot .hero-auth__logo { color: #25334a !important; }
+#authRoot .hero-auth__panel {
+  padding: clamp(22px, 3vw, 38px) !important;
+  border: 1px solid #e0e6ef !important;
+  border-radius: 20px !important;
+  background: rgba(255,255,255,.94) !important;
+  box-shadow: 0 18px 48px rgba(28,43,65,.10) !important;
+  backdrop-filter: blur(10px) !important;
+}
+#authRoot .hero-chip {
+  background: #edf1ff !important;
+  color: #4353ad !important;
+  border: 1px solid #dfe5ff !important;
+  border-radius: 999px !important;
+}
+#authRoot .hero-auth h1,
+#authRoot .hero-auth h2 { color: #202936 !important; }
+#authRoot .hero-tagline,
+#authRoot .hero-note,
+#authRoot .hero-role-purpose { color: #58677a !important; }
+#authRoot .hero-form-label { color: #44546a !important; }
+#authRoot .hero-role {
+  background: #ffffff !important;
+  border-top: 1px solid #e0e6ee !important;
+  border-right: 1px solid #e0e6ee !important;
+  border-bottom: 1px solid #e0e6ee !important;
+  color: #202936 !important;
+  box-shadow: 0 2px 8px rgba(16,24,40,.035) !important;
+}
+#authRoot .hero-role:hover { background: #f8faff !important; border-color: #c9d3e5 !important; }
+#authRoot .hero-role small { color: #58677a !important; }
+#authRoot .hero-field { color: #465468 !important; }
+#authRoot .hero-field input {
+  color: #202936 !important;
+  -webkit-text-fill-color: #202936 !important;
+  background: #ffffff !important;
+  border-bottom-color: #cfd7e2 !important;
+}
+#authRoot .hero-field input::placeholder { color: #718096 !important; opacity: 1 !important; -webkit-text-fill-color: #718096 !important; }
+#authRoot .hero-password button { color: #42516a !important; }
+#authRoot .hero-back { color: #4353ad !important; }
+#authRoot .hero-btn--solid {
+  background: #5364c8 !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+}
+#authRoot .hero-btn--solid:hover { background: #4557bb !important; }
+#authRoot .hero-contact-box {
+  border-top-color: #e1e6ee !important;
+  color: #4e5d71 !important;
+}
+#authRoot .hero-contact-box__eyebrow { color: #596a81 !important; }
+#authRoot .hero-contact-box strong { color: #263445 !important; }
+#authRoot .hero-contact-box p,
+#authRoot .hero-contact-box small { color: #58677a !important; }
+#authRoot .hero-auth__footer {
+  color: #5b687a !important;
+  border-top-color: #dfe5ed !important;
+}
+#authRoot :is(a,button,input):focus-visible { outline: 2px solid #5364c8 !important; outline-offset: 3px !important; }
+
+/* The switchers are removed in markup; keep them hidden if stale markup is cached. */
+.hero-theme-switch, .hero-theme-toggle, .theme-toggle, #authThemeLight, #authThemeDark { display: none !important; }
+
+@media (max-width: 640px) {
+  #authRoot .hero-auth__panel { padding: 20px 16px !important; border-radius: 16px !important; }
+  #authRoot .hero-auth__logo { font-size: clamp(14px, 4vw, 18px) !important; letter-spacing: .09em !important; }
+  #authRoot .hero-auth__nav { justify-content: center !important; }
+}
+
+/* The legacy global content rule colors every nested span/strong. Restore
+   white text inside primary actions and red text inside destructive actions. */
+body:not(.dark-mode) #appRoot .content .btn.primary,
+body:not(.dark-mode) #appRoot .content .btn.primary :where(*) {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+body:not(.dark-mode) #appRoot .content .btn.danger-btn,
+body:not(.dark-mode) #appRoot .content .btn.danger-btn :where(*) {
+  color: #a12f38 !important;
+  -webkit-text-fill-color: #a12f38 !important;
+}

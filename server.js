@@ -102,7 +102,10 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'development-only-session-secret-change-me-please',
   resave: false,
   saveUninitialized: false,
-  cookie: { httpOnly: true, sameSite: 'lax', secure: isProd, maxAge: 1000 * 60 * 60 * 8 }
+  // Use the request protocol, not NODE_ENV alone: production-mode local testing
+  // over http://localhost must still receive its session cookie, while Render
+  // HTTPS requests remain Secure because trust proxy is enabled above.
+  cookie: { httpOnly: true, sameSite: 'lax', secure: 'auto', maxAge: 1000 * 60 * 60 * 8 }
 }));
 app.use(requireCsrf);
 
@@ -175,6 +178,7 @@ function defenseEndHasPassed(date, end, now = new Date()) {
 function scheduleDisplayStatus(schedule, now = new Date()) {
   if (schedule.status === 'Cancelled' || schedule.status === 'Completed') return schedule.status;
   if (schedule.panel_outcome === 'Not Conducted') return 'Not Conducted';
+  if (schedule.result_status === 'Awaiting Coordinator') return 'Awaiting Coordinator Decision';
   if (schedule.panel_outcome === 'Conducted') return 'Pending Evaluation';
   if (schedule.panel_proceedance === 'Reschedule Requested') return 'Reschedule Requested';
   const current = manilaNowParts(now);
@@ -304,6 +308,16 @@ async function ensureColumns() {
   await q(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS defense_result TEXT`);
   await q(`ALTER TABLE schedules DROP CONSTRAINT IF EXISTS schedules_defense_result_check`);
   await q(`ALTER TABLE schedules ADD CONSTRAINT schedules_defense_result_check CHECK (defense_result IS NULL OR defense_result IN ('Passed','Failed','For Revision','Re-defense Required'))`);
+  await q(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS result_status TEXT NOT NULL DEFAULT 'Pending'`);
+  await q(`ALTER TABLE schedules DROP CONSTRAINT IF EXISTS schedules_result_status_check`);
+  await q(`ALTER TABLE schedules ADD CONSTRAINT schedules_result_status_check CHECK (result_status IN ('Pending','Awaiting Coordinator','Finalized'))`);
+  await q(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS result_decision_note TEXT`);
+  await q(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS result_finalized_by INTEGER REFERENCES users(id) ON DELETE SET NULL`);
+  await q(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS result_finalized_at TIMESTAMPTZ`);
+  await q(`UPDATE schedules SET result_status='Finalized', result_finalized_at=COALESCE(result_finalized_at,created_at) WHERE status='Completed' AND defense_result IS NOT NULL AND result_status<>'Finalized'`);
+  await q(`ALTER TABLE evaluations ADD COLUMN IF NOT EXISTS defense_result TEXT`);
+  await q(`ALTER TABLE evaluations DROP CONSTRAINT IF EXISTS evaluations_defense_result_check`);
+  await q(`ALTER TABLE evaluations ADD CONSTRAINT evaluations_defense_result_check CHECK (defense_result IS NULL OR defense_result IN ('Passed','Failed','For Revision','Re-defense Required'))`);
   await q(`ALTER TABLE projects ALTER COLUMN code DROP NOT NULL`);
   await q(`ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_code_key`);
   await q(`ALTER TABLE schedules ADD COLUMN IF NOT EXISTS panel_proceedance TEXT NOT NULL DEFAULT 'Pending'`);
@@ -526,9 +540,16 @@ app.post('/api/login', loginLimiter, async (req,res) => {
     const safeUser = serializeUser(user);
     await new Promise((resolve,reject)=>req.session.regenerate(err=>err?reject(err):resolve()));
     req.session.user = safeUser;
-    ensureCsrf(req);
+    const csrfToken = ensureCsrf(req);
     await audit(user.id,'login','user',user.id,{});
-    res.json({ user: req.session.user, csrfToken: req.session.csrfToken });
+    // Persist the regenerated session before returning success. The browser
+    // immediately calls /api/dashboard after this response; explicitly saving
+    // avoids a race where that request arrives before the session store write.
+    await new Promise((resolve, reject) => {
+      req.session.save(error => error ? reject(error) : resolve());
+    });
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.json({ user: req.session.user, csrfToken });
   } catch (e) { console.error(e); res.status(500).json({ error: 'Unable to sign in.' }); }
 });
 
@@ -552,7 +573,7 @@ app.get('/api/dashboard', auth, async (req,res) => {
   if (user.role === 'adviser') { scheduleWhere='WHERE p.adviser_id=$1'; scheduleParams=[user.id]; }
   if (user.role === 'panel_member') { scheduleWhere='WHERE EXISTS (SELECT 1 FROM panel_assignments pa WHERE pa.schedule_id=s.id AND pa.user_id=$1)'; scheduleParams=[user.id]; }
   const scheduleBaseWhere = scheduleWhere ? `${scheduleWhere} AND s.status <> 'Cancelled'` : "WHERE s.status <> 'Cancelled'";
-  const scheduleResult = await q(`SELECT s.id,s.project_id,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.start_time,s.end_time,s.status,s.panel_proceedance,s.panel_outcome,s.panel_outcome_at,s.panel_outcome_note,s.defense_result,p.code,p.title,r.name room_name FROM schedules s JOIN projects p ON p.id=s.project_id LEFT JOIN rooms r ON r.id=s.room_id ${scheduleBaseWhere} ORDER BY s.defense_date,s.start_time`, scheduleParams);
+  const scheduleResult = await q(`SELECT s.id,s.project_id,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.start_time,s.end_time,s.status,s.result_status,s.panel_proceedance,s.panel_outcome,s.panel_outcome_at,s.panel_outcome_note,s.defense_result,p.code,p.title,r.name room_name FROM schedules s JOIN projects p ON p.id=s.project_id LEFT JOIN rooms r ON r.id=s.room_id ${scheduleBaseWhere} ORDER BY s.defense_date,s.start_time`, scheduleParams);
   const schedules = scheduleResult.rows.map(withScheduleDisplayStatus);
 
   let requestWhere = '', requestParams = [];
@@ -765,12 +786,13 @@ app.post('/api/projects', auth, requireRole('coordinator'), async (req,res) => {
   const title=cleanText(req.body.title,240);
   const type=req.body.type==='Capstone'?'Capstone':req.body.type==='Thesis'?'Thesis':null;
   const adviserId=Number(req.body.adviser_id)||null;
+  // A project may contain any number of students; deduplicate IDs but impose no group-size cap.
   const studentIds=Array.isArray(req.body.student_ids)
     ? [...new Set(req.body.student_ids.map(Number).filter(id=>Number.isSafeInteger(id)&&id>0))]
     : [];
   if (!title) return res.status(400).json({ error:'Project title is required.' });
   if (!type) return res.status(400).json({ error:'Choose Thesis or Capstone as the project type.' });
-  if (studentIds.length < 1 || studentIds.length > 3) return res.status(400).json({ error:'Select 1 to 3 students for a project.' });
+  if (studentIds.length < 1) return res.status(400).json({ error:'Select at least one student for a project.' });
   if (!Number.isSafeInteger(adviserId) || adviserId<=0) return res.status(400).json({ error:'Please select an active adviser.' });
 
   // Lock all selected account rows in a consistent order. This makes the conflict
@@ -1037,7 +1059,7 @@ app.delete('/api/rooms/:id', auth, requireRole('coordinator'), async(req,res)=>{
 
 app.get('/api/schedules', auth, async(req,res)=>{
  const u=req.session.user; let where='';let params=[]; if(u.role==='student'){where='WHERE ($1=ANY(COALESCE(p.student_ids, ARRAY[]::int[])) OR EXISTS (SELECT 1 FROM project_members pm WHERE pm.project_id=p.id AND pm.student_id=$1))';params=[u.id];} if(u.role==='adviser'){where='WHERE p.adviser_id=$1';params=[u.id];} if(u.role==='panel_member'){where="WHERE EXISTS (SELECT 1 FROM panel_assignments pa WHERE pa.schedule_id=s.id AND pa.user_id=$1) AND s.status NOT IN ('Cancelled')";params=[u.id];}
- const r=await q(`SELECT s.id,s.project_id,s.request_id,s.defense_type,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.start_time,s.end_time,s.room_id,s.status,s.defense_result,s.panel_proceedance,s.panel_proceeded_at,s.panel_outcome,s.panel_outcome_at,s.panel_outcome_note,s.notes,s.created_at,p.title,p.type,p.adviser_id,COALESCE(a.full_name,'Unassigned') adviser_name,r.name room_name FROM schedules s JOIN projects p ON p.id=s.project_id LEFT JOIN users a ON a.id=p.adviser_id LEFT JOIN rooms r ON r.id=s.room_id ${where} ORDER BY s.defense_date,s.start_time`,params);
+ const r=await q(`SELECT s.id,s.project_id,s.request_id,s.defense_type,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.start_time,s.end_time,s.room_id,s.status,s.defense_result,s.result_status,s.panel_proceedance,s.panel_proceeded_at,s.panel_outcome,s.panel_outcome_at,s.panel_outcome_note,s.notes,s.created_at,p.title,p.type,p.adviser_id,COALESCE(a.full_name,'Unassigned') adviser_name,r.name room_name FROM schedules s JOIN projects p ON p.id=s.project_id LEFT JOIN users a ON a.id=p.adviser_id LEFT JOIN rooms r ON r.id=s.room_id ${where} ORDER BY s.defense_date,s.start_time`,params);
  res.json({schedules:r.rows.map(withScheduleDisplayStatus)});
 });
 async function saveSchedule(payload, userId, excludeId=null){
@@ -1078,35 +1100,73 @@ app.patch('/api/schedules/:id/cancel', auth, requireRole('coordinator'), async(r
 app.get('/api/panels', auth, async(req,res)=>{
  const u=req.session.user;
  if(u.role==='panel_member'){
-   const r=await q(`SELECT pa.id,pa.schedule_id,pa.user_id,pa.panel_role,u.full_name,u.email,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.start_time,s.end_time,s.status,s.panel_proceedance,s.panel_outcome,s.panel_outcome_at,s.panel_outcome_note,p.title FROM panel_assignments pa JOIN users u ON u.id=pa.user_id JOIN schedules s ON s.id=pa.schedule_id JOIN projects p ON p.id=s.project_id WHERE pa.user_id=$1 AND s.status NOT IN ('Cancelled') ORDER BY s.defense_date,s.start_time,pa.panel_role`,[u.id]);
+   const r=await q(`SELECT pa.id,pa.schedule_id,pa.user_id,pa.panel_role,u.full_name,u.email,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.start_time,s.end_time,s.status,s.result_status,s.panel_proceedance,s.panel_outcome,s.panel_outcome_at,s.panel_outcome_note,p.title FROM panel_assignments pa JOIN users u ON u.id=pa.user_id JOIN schedules s ON s.id=pa.schedule_id JOIN projects p ON p.id=s.project_id WHERE pa.user_id=$1 AND s.status NOT IN ('Cancelled') ORDER BY s.defense_date,s.start_time,pa.panel_role`,[u.id]);
    return res.json({assignments:r.rows.map(withScheduleDisplayStatus)});
  }
  let where='';let params=[];
  if(u.role==='student'){where='WHERE ($1=ANY(COALESCE(p.student_ids, ARRAY[]::int[])) OR EXISTS (SELECT 1 FROM project_members pm WHERE pm.project_id=p.id AND pm.student_id=$1))';params=[u.id];}
  if(u.role==='adviser'){where='WHERE p.adviser_id=$1';params=[u.id];}
  if(u.role==='coordinator' || u.role==='administrator'){where='';params=[];}
- const r=await q(`SELECT pa.id,pa.schedule_id,pa.user_id,pa.panel_role,u.full_name,u.email,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.start_time,s.end_time,s.status,s.panel_proceedance,s.panel_outcome,s.panel_outcome_at,s.panel_outcome_note,p.title FROM panel_assignments pa JOIN users u ON u.id=pa.user_id JOIN schedules s ON s.id=pa.schedule_id JOIN projects p ON p.id=s.project_id ${where} ORDER BY s.defense_date,s.start_time,pa.panel_role`,params);res.json({assignments:r.rows.map(withScheduleDisplayStatus)});
+ const r=await q(`SELECT pa.id,pa.schedule_id,pa.user_id,pa.panel_role,u.full_name,u.email,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.start_time,s.end_time,s.status,s.result_status,s.panel_proceedance,s.panel_outcome,s.panel_outcome_at,s.panel_outcome_note,p.title FROM panel_assignments pa JOIN users u ON u.id=pa.user_id JOIN schedules s ON s.id=pa.schedule_id JOIN projects p ON p.id=s.project_id ${where} ORDER BY s.defense_date,s.start_time,pa.panel_role`,params);res.json({assignments:r.rows.map(withScheduleDisplayStatus)});
 });
 app.get('/api/panel-options', auth, requireRole('coordinator'), async(_req,res)=>{
  const panelMembers=(await q("SELECT id,full_name,email,role,panel_availability FROM users WHERE role='panel_member' AND is_active=true ORDER BY full_name")).rows;
  const advisers=(await q("SELECT id,full_name,email,role FROM users WHERE role='adviser' AND is_active=true ORDER BY full_name")).rows;
- const schedules=(await q(`SELECT s.id,s.project_id,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.start_time,s.end_time,s.status,s.panel_proceedance,p.title,p.type,p.adviser_id,COALESCE(a.full_name,'Unassigned') adviser_name
+ const schedules=(await q(`SELECT s.id,s.project_id,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.start_time,s.end_time,s.status,s.panel_proceedance,s.panel_outcome,s.result_status,p.title,p.type,p.adviser_id,COALESCE(a.full_name,'Unassigned') adviser_name
                               FROM schedules s JOIN projects p ON p.id=s.project_id LEFT JOIN users a ON a.id=p.adviser_id
-                              WHERE s.status <> 'Cancelled' ORDER BY s.defense_date,s.start_time,p.title`)).rows;
+                              WHERE s.status NOT IN ('Cancelled','Completed') AND s.panel_outcome IS NULL AND s.result_status<>'Finalized'
+                              ORDER BY s.defense_date,s.start_time,p.title`)).rows;
  res.json({panelMembers,advisers,schedules});
 });
 app.post('/api/panels', auth, requireRole('coordinator'), async(req,res)=>{
- const scheduleId=Number(req.body.schedule_id),userId=Number(req.body.user_id),role=['Chairperson','Panel Member','Adviser'].includes(req.body.panel_role)?req.body.panel_role:null; if(!scheduleId||!userId||!role)return res.status(400).json({error:'Defense, member, and panel role are required.'});
- const schedule=await q(`SELECT s.id,s.project_id,s.defense_date,s.start_time,s.end_time,p.adviser_id FROM schedules s JOIN projects p ON p.id=s.project_id WHERE s.id=$1`,[scheduleId]);if(!schedule.rowCount)return res.status(404).json({error:'Defense schedule not found.'});
- if(schedule.rows[0].status==='Cancelled' || schedule.rows[0].status==='Completed')return res.status(409).json({error:'Panel assignments can only be made for an active defense schedule.'});
- const target=await q('SELECT id,role,is_active,panel_availability FROM users WHERE id=$1',[userId]);if(!target.rowCount||!target.rows[0].is_active)return res.status(400).json({error:'Selected user is not active.'});
- const expectedRole=role==='Adviser'?'adviser':'panel_member';if(target.rows[0].role!==expectedRole)return res.status(400).json({error:`${role} must be assigned to an active ${expectedRole==='adviser'?'Adviser':'Panel Member'} account.`});if(role==='Adviser'&&target.rows[0].id!==schedule.rows[0].adviser_id)return res.status(400).json({error:'The Adviser role must use the adviser assigned to this project.'});
- if(role!=='Adviser'&&target.rows[0].panel_availability){ /* availability is recorded and can be reviewed; free-form because exact scheduling rules are institution-specific */ }
- const existing=await q('SELECT id FROM panel_assignments WHERE schedule_id=$1 AND user_id=$2',[scheduleId,userId]);if(existing.rowCount)return res.status(409).json({error:'This person is already assigned to this defense.'});const roleExists=await q('SELECT id FROM panel_assignments WHERE schedule_id=$1 AND panel_role=$2',[scheduleId,role]);if(roleExists.rowCount&&role!=='Panel Member')return res.status(409).json({error:`A ${role} is already assigned to this defense.`});
- const conflict=await q(`SELECT pa.id FROM panel_assignments pa JOIN schedules s ON s.id=pa.schedule_id WHERE pa.user_id=$1 AND s.id<>$2 AND s.status<>'Cancelled' AND s.defense_date=$3 AND s.start_time < $5 AND s.end_time > $4`,[userId,scheduleId,schedule.rows[0].defense_date,schedule.rows[0].start_time,schedule.rows[0].end_time]);if(conflict.rowCount)return res.status(409).json({error:'This person is already assigned to another defense at the same time.'});
- const r=await q('INSERT INTO panel_assignments(schedule_id,user_id,panel_role) VALUES($1,$2,$3) RETURNING *',[scheduleId,userId,role]);await audit(req.session.user.id,'create','panel_assignment',r.rows[0].id,{schedule_id:scheduleId,user_id:userId,panel_role:role});res.status(201).json({assignment:r.rows[0]});
+ const scheduleId=Number(req.body.schedule_id),userId=Number(req.body.user_id),role=['Chairperson','Panel Member','Adviser'].includes(req.body.panel_role)?req.body.panel_role:null;
+ if(!scheduleId||!userId||!role)return res.status(400).json({error:'Defense, member, and panel role are required.'});
+ try{
+  const assignment=await withTransaction(async client=>{
+   // Lock the schedule so its evaluator roster cannot change while the defense is being confirmed/finalized.
+   const schedule=await client.query(`SELECT s.id,s.project_id,s.defense_date,s.start_time,s.end_time,s.status,s.panel_outcome,s.result_status,p.adviser_id
+     FROM schedules s JOIN projects p ON p.id=s.project_id WHERE s.id=$1 FOR UPDATE OF s`,[scheduleId]);
+   if(!schedule.rowCount)throw Object.assign(new Error('Defense schedule not found.'),{status:404});
+   const row=schedule.rows[0];
+   if(row.status==='Cancelled'||row.status==='Completed'||row.panel_outcome||row.result_status==='Finalized')
+    throw Object.assign(new Error('Panel assignments are locked after the defense outcome is recorded or the final result is finalized.'),{status:409});
+   const target=await client.query('SELECT id,role,is_active,panel_availability FROM users WHERE id=$1',[userId]);
+   if(!target.rowCount||!target.rows[0].is_active)throw Object.assign(new Error('Selected user is not active.'),{status:400});
+   const expectedRole=role==='Adviser'?'adviser':'panel_member';
+   if(target.rows[0].role!==expectedRole)throw Object.assign(new Error(`${role} must be assigned to an active ${expectedRole==='adviser'?'Adviser':'Panel Member'} account.`),{status:400});
+   if(role==='Adviser'&&target.rows[0].id!==row.adviser_id)throw Object.assign(new Error('The Adviser role must use the adviser assigned to this project.'),{status:400});
+   const existing=await client.query('SELECT id FROM panel_assignments WHERE schedule_id=$1 AND user_id=$2',[scheduleId,userId]);
+   if(existing.rowCount)throw Object.assign(new Error('This person is already assigned to this defense.'),{status:409});
+   const roleExists=await client.query('SELECT id FROM panel_assignments WHERE schedule_id=$1 AND panel_role=$2',[scheduleId,role]);
+   if(roleExists.rowCount&&role!=='Panel Member')throw Object.assign(new Error(`A ${role} is already assigned to this defense.`),{status:409});
+   const conflict=await client.query(`SELECT pa.id FROM panel_assignments pa JOIN schedules s ON s.id=pa.schedule_id
+     WHERE pa.user_id=$1 AND s.id<>$2 AND s.status<>'Cancelled' AND s.defense_date=$3
+       AND s.start_time < $5 AND s.end_time > $4`,[userId,scheduleId,row.defense_date,row.start_time,row.end_time]);
+   if(conflict.rowCount)throw Object.assign(new Error('This person is already assigned to another defense at the same time.'),{status:409});
+   const saved=await client.query('INSERT INTO panel_assignments(schedule_id,user_id,panel_role) VALUES($1,$2,$3) RETURNING *',[scheduleId,userId,role]);
+   return saved.rows[0];
+  });
+  await audit(req.session.user.id,'create','panel_assignment',assignment.id,{schedule_id:scheduleId,user_id:userId,panel_role:role});
+  res.status(201).json({assignment});
+ }catch(e){res.status(e.status||500).json({error:e.message||'Unable to assign panel member.'});}
 });
-app.delete('/api/panels/:id', auth, requireRole('coordinator'), async(req,res)=>{const r=await q('DELETE FROM panel_assignments WHERE id=$1 RETURNING *',[Number(req.params.id)]);if(!r.rowCount)return res.status(404).json({error:'Panel assignment not found.'});await audit(req.session.user.id,'delete','panel_assignment',Number(req.params.id),{});res.json({assignment:r.rows[0]});});
+app.delete('/api/panels/:id', auth, requireRole('coordinator'), async(req,res)=>{
+ const assignmentId=Number(req.params.id);
+ try{
+  const removed=await withTransaction(async client=>{
+   const current=await client.query(`SELECT pa.id,pa.schedule_id,s.status,s.panel_outcome,s.result_status
+     FROM panel_assignments pa JOIN schedules s ON s.id=pa.schedule_id WHERE pa.id=$1 FOR UPDATE OF s`,[assignmentId]);
+   if(!current.rowCount)throw Object.assign(new Error('Panel assignment not found.'),{status:404});
+   const row=current.rows[0];
+   if(row.status==='Completed'||row.status==='Cancelled'||row.panel_outcome||row.result_status==='Finalized')
+    throw Object.assign(new Error('Panel assignments cannot be removed after the defense outcome is recorded or the final result is finalized.'),{status:409});
+   const deleted=await client.query('DELETE FROM panel_assignments WHERE id=$1 RETURNING *',[assignmentId]);
+   return deleted.rows[0];
+  });
+  await audit(req.session.user.id,'delete','panel_assignment',assignmentId,{});
+  res.json({assignment:removed});
+ }catch(e){res.status(e.status||500).json({error:e.message||'Unable to remove panel assignment.'});}
+});
 
 // Panel flow: proceed or request reschedule.
 app.post('/api/schedules/:id/proceed', auth, requireRole('panel_member'), async(req,res)=>{
@@ -1141,50 +1201,163 @@ app.patch('/api/reschedule-requests/:id', auth, requireRole('coordinator'), asyn
  const old=await q(`SELECT * FROM schedules WHERE id=$1`,[rr.rows[0].schedule_id]);if(!old.rowCount)return res.status(404).json({error:'Original schedule not found.'});
  try{const replacement=await saveSchedule({project_id:old.rows[0].project_id,request_id:old.rows[0].request_id,defense_type:old.rows[0].defense_type,defense_date:rr.rows[0].preferred_date,start_time:rr.rows[0].preferred_time,end_time:addMinutesToTime(String(rr.rows[0].preferred_time).slice(0,5),Math.max(30,Number(process.env.DEFAULT_DEFENSE_DURATION_MINUTES||120))),room_id:null,notes:`Rescheduled from defense schedule #${old.rows[0].id}. ${old.rows[0].notes||''}`},req.session.user.id,old.rows[0].id); const r=await q("UPDATE reschedule_requests SET status='Approved',updated_at=NOW() WHERE id=$1 RETURNING *",[id]); await q("UPDATE schedules SET panel_proceedance='Pending',panel_proceeded_at=NULL WHERE id=$1",[replacement.id]); await audit(req.session.user.id,'approve-reschedule','reschedule_request',id,{replacement_schedule_id:replacement.id}); res.json({request:r.rows[0],schedule:replacement});}catch(e){res.status(e.status||500).json({error:e.message||'Unable to approve the reschedule request.'});}});
 
-// Evaluation: panel member/adviser only when assigned. Confirmation is represented by the final submit action.
+// Evaluations retain each evaluator's own decision. The system finalizes automatically
+// only when all required evaluators agree; disagreement is resolved explicitly by the Coordinator.
 app.get('/api/evaluations', auth, async(req,res)=>{
   const u=req.session.user; let where=''; let params=[];
   if(u.role==='panel_member'){where='WHERE e.evaluator_id=$1';params=[u.id];}
   if(u.role==='adviser'){where='WHERE e.evaluator_id=$1 AND p.adviser_id=$1';params=[u.id];}
   if(u.role==='student'){where='WHERE ($1=ANY(COALESCE(p.student_ids, ARRAY[]::int[])) OR EXISTS (SELECT 1 FROM project_members pm WHERE pm.project_id=p.id AND pm.student_id=$1))';params=[u.id];}
-  const r=await q(`SELECT e.*,u.full_name evaluator_name,p.code,p.title,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.defense_type,s.panel_proceedance FROM evaluations e JOIN users u ON u.id=e.evaluator_id JOIN schedules s ON s.id=e.schedule_id JOIN projects p ON p.id=s.project_id ${where} ORDER BY e.created_at DESC`,params);
-  res.json({evaluations:r.rows});
+  const r=await q(`SELECT e.*,u.full_name evaluator_name,p.code,p.title,
+      to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.defense_type,
+      s.panel_proceedance,s.defense_result AS final_defense_result,
+      s.result_status,s.result_decision_note,s.result_finalized_at
+    FROM evaluations e JOIN users u ON u.id=e.evaluator_id
+    JOIN schedules s ON s.id=e.schedule_id JOIN projects p ON p.id=s.project_id
+    ${where} ORDER BY e.created_at DESC`,params);
+  let finalizations=[];
+  if(u.role==='coordinator'){
+    const summaries=await q(`SELECT s.id AS schedule_id,p.title,s.defense_type,
+        to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.result_status,
+        s.defense_result AS final_defense_result,
+        req.expected_count,sub.submitted_count,sub.decision_count,
+        COALESCE(votes.evaluation_summary,'No evaluator assignments found') AS evaluation_summary
+      FROM schedules s JOIN projects p ON p.id=s.project_id
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::int AS expected_count FROM (
+          SELECT user_id AS evaluator_id FROM panel_assignments WHERE schedule_id=s.id
+        ) required
+      ) req ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*) FILTER (WHERE e.id IS NOT NULL)::int AS submitted_count,
+               COUNT(*) FILTER (WHERE e.defense_result IS NOT NULL)::int AS decision_count
+        FROM (
+          SELECT user_id AS evaluator_id FROM panel_assignments WHERE schedule_id=s.id
+        ) required
+        LEFT JOIN evaluations e ON e.schedule_id=s.id AND e.evaluator_id=required.evaluator_id
+      ) sub ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT string_agg(u2.full_name || ': ' || COALESCE(e.defense_result,'Decision not recorded'), ' · ' ORDER BY u2.full_name) AS evaluation_summary
+        FROM (
+          SELECT user_id AS evaluator_id FROM panel_assignments WHERE schedule_id=s.id
+        ) required
+        JOIN users u2 ON u2.id=required.evaluator_id
+        LEFT JOIN evaluations e ON e.schedule_id=s.id AND e.evaluator_id=required.evaluator_id
+      ) votes ON TRUE
+      WHERE s.panel_outcome='Conducted' AND s.status<>'Cancelled'
+      ORDER BY CASE WHEN s.result_status='Awaiting Coordinator' THEN 0 ELSE 1 END,s.defense_date DESC,s.id DESC`);
+    finalizations=summaries.rows;
+  }
+  res.json({evaluations:r.rows,finalizations});
 });
+
 app.post('/api/evaluations', auth, requireRole('panel_member','adviser'), async(req,res)=>{
   const scheduleId=Number(req.body.schedule_id);
-  const schedule=await q("SELECT s.status,s.panel_proceedance,s.panel_outcome,to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.end_time,s.project_id,p.adviser_id FROM schedules s JOIN projects p ON p.id=s.project_id WHERE s.id=$1",[scheduleId]);
-  if(!schedule.rowCount)return res.status(404).json({error:'Defense not found.'});
-  if(schedule.rows[0].status==='Cancelled')return res.status(409).json({error:'Cancelled defenses cannot be evaluated.'});
-  if(schedule.rows[0].panel_outcome==='Not Conducted')return res.status(409).json({error:'This defense was reported as not conducted and cannot be evaluated.'});
-  if(schedule.rows[0].status!=='Completed' && schedule.rows[0].panel_outcome!=='Conducted')return res.status(409).json({error:'A panel member must first confirm that the defense was conducted.'});
-  if(!defenseEndHasPassed(schedule.rows[0].defense_date,schedule.rows[0].end_time))return res.status(409).json({error:'Evaluation is available only after the scheduled defense end time.'});
-  const isAdviser= req.session.user.role==='adviser';
-  let eligible=false;
-  if(isAdviser){
-    eligible = Number(schedule.rows[0].adviser_id)===Number(req.session.user.id);
-  } else {
-    const membership=await q('SELECT panel_role FROM panel_assignments WHERE schedule_id=$1 AND user_id=$2',[scheduleId,req.session.user.id]);
-    eligible=membership.rowCount>0;
-  }
-  if(!eligible)return res.status(403).json({error:isAdviser?'You can only evaluate defenses for projects where you are the assigned adviser.':'You are not assigned to this defense.'});
   const scores=['technical_score','presentation_score','documentation_score'].map(k=>Number(req.body[k]));
-  if(scores.some(x=>Number.isNaN(x)||x<0||x>100))return res.status(400).json({error:'Scores must be between 0 and 100.'});
-  const comments=cleanText(req.body.comments,2000), recommendation=cleanText(req.body.recommendation,80)||'For Revision'; const result=['Passed','Failed','For Revision','Re-defense Required'].includes(req.body.defense_result)?req.body.defense_result:null; if(!result)return res.status(400).json({error:'Select a defense result.'});
-  const r=await q(`INSERT INTO evaluations(schedule_id,evaluator_id,technical_score,presentation_score,documentation_score,comments,recommendation)
-    VALUES($1,$2,$3,$4,$5,$6,$7)
-    ON CONFLICT(schedule_id,evaluator_id) DO UPDATE SET technical_score=EXCLUDED.technical_score,presentation_score=EXCLUDED.presentation_score,documentation_score=EXCLUDED.documentation_score,comments=EXCLUDED.comments,recommendation=EXCLUDED.recommendation,confirmed_at=NOW()
-    RETURNING *`,[scheduleId,req.session.user.id,scores[0],scores[1],scores[2],comments,recommendation]);
-  const panelCount=await q('SELECT COUNT(*)::int count FROM panel_assignments WHERE schedule_id=$1',[scheduleId]);
-  const adviserAssigned=await q(`SELECT CASE WHEN p.adviser_id IS NULL THEN 0 ELSE 1 END::int count
-    FROM schedules s JOIN projects p ON p.id=s.project_id WHERE s.id=$1`,[scheduleId]);
-  const expectedEvaluators=Number(panelCount.rows[0].count)+Number(adviserAssigned.rows[0]?.count||0);
-  const evaluationCount=await q('SELECT COUNT(*)::int count FROM evaluations WHERE schedule_id=$1',[scheduleId]);
-  if(expectedEvaluators>0 && Number(evaluationCount.rows[0].count)>=expectedEvaluators) {
-    await q("UPDATE schedules SET status='Completed',defense_result=$2 WHERE id=$1",[scheduleId,result]);
-    await q("UPDATE defense_requests SET status='Completed',review_feedback=$2,updated_at=NOW() WHERE id=(SELECT request_id FROM schedules WHERE id=$1) AND status <> 'Completed'",[scheduleId,`Defense completed. Result: ${result}.`]);
-  }
-  await syncCompletedDefenseRequests();
-  res.status(201).json({evaluation:r.rows[0]});
+  if(!Number.isSafeInteger(scheduleId)||scheduleId<=0)return res.status(400).json({error:'Select an assigned defense.'});
+  if(scores.some(x=>!Number.isFinite(x)||x<0||x>100))return res.status(400).json({error:'Scores must be between 0 and 100.'});
+  const comments=cleanText(req.body.comments,2000);
+  const recommendation=cleanText(req.body.recommendation,80)||'For Revision';
+  const result=['Passed','Failed','For Revision','Re-defense Required'].includes(req.body.defense_result)?req.body.defense_result:null;
+  if(!result)return res.status(400).json({error:'Select an evaluator result.'});
+
+  try{
+    const outcome=await withTransaction(async client=>{
+      const schedule=await client.query(`SELECT s.id,s.status,s.result_status,s.panel_outcome,
+          to_char(s.defense_date,'YYYY-MM-DD') AS defense_date,s.end_time,s.project_id,p.adviser_id,s.request_id
+        FROM schedules s JOIN projects p ON p.id=s.project_id WHERE s.id=$1 FOR UPDATE OF s`,[scheduleId]);
+      if(!schedule.rowCount)throw Object.assign(new Error('Defense not found.'),{status:404});
+      const row=schedule.rows[0];
+      if(row.status==='Cancelled')throw Object.assign(new Error('Cancelled defenses cannot be evaluated.'),{status:409});
+      if(row.result_status==='Finalized')throw Object.assign(new Error('The final defense result has already been recorded. Evaluations can no longer be changed.'),{status:409});
+      if(row.panel_outcome==='Not Conducted')throw Object.assign(new Error('This defense was reported as not conducted and cannot be evaluated.'),{status:409});
+      if(row.panel_outcome!=='Conducted')throw Object.assign(new Error('A panel member must first confirm that the defense was conducted.'),{status:409});
+      if(!defenseEndHasPassed(row.defense_date,row.end_time))throw Object.assign(new Error('Evaluation is available only after the scheduled defense end time.'),{status:409});
+
+      const membership=await client.query('SELECT panel_role FROM panel_assignments WHERE schedule_id=$1 AND user_id=$2',[scheduleId,req.session.user.id]);
+      const isAdviser=req.session.user.role==='adviser';
+      const eligible=membership.rowCount>0 && (isAdviser
+        ? membership.rows[0].panel_role==='Adviser'
+        : ['Chairperson','Panel Member'].includes(membership.rows[0].panel_role));
+      if(!eligible)throw Object.assign(new Error(isAdviser
+        ? 'The Adviser can evaluate only when explicitly assigned to this defense.'
+        : 'You are not assigned to this defense.'),{status:403});
+
+      const saved=await client.query(`INSERT INTO evaluations(schedule_id,evaluator_id,technical_score,presentation_score,documentation_score,comments,recommendation,defense_result)
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8)
+        ON CONFLICT(schedule_id,evaluator_id) DO UPDATE SET
+          technical_score=EXCLUDED.technical_score,presentation_score=EXCLUDED.presentation_score,
+          documentation_score=EXCLUDED.documentation_score,comments=EXCLUDED.comments,
+          recommendation=EXCLUDED.recommendation,defense_result=EXCLUDED.defense_result,confirmed_at=NOW()
+        RETURNING *`,[scheduleId,req.session.user.id,scores[0],scores[1],scores[2],comments,recommendation,result]);
+
+      const stats=await client.query(`WITH required AS (
+          SELECT user_id AS evaluator_id FROM panel_assignments WHERE schedule_id=$1
+        )
+        SELECT COUNT(*)::int AS expected_count,
+          COUNT(e.id)::int AS submitted_count,
+          COUNT(e.defense_result)::int AS decision_count,
+          COUNT(DISTINCT e.defense_result)::int AS distinct_result_count,
+          MIN(e.defense_result) AS unanimous_result
+        FROM required LEFT JOIN evaluations e ON e.schedule_id=$1 AND e.evaluator_id=required.evaluator_id`,[scheduleId]);
+      const st=stats.rows[0];
+      let finalizationStatus='Pending';
+      if(Number(st.expected_count)>0&&Number(st.submitted_count)>=Number(st.expected_count)&&Number(st.decision_count)>=Number(st.expected_count)){
+        if(Number(st.distinct_result_count)===1){
+          finalizationStatus='Finalized';
+          await client.query(`UPDATE schedules SET status='Completed',defense_result=$2,result_status='Finalized',
+              result_decision_note='Automatically finalized because all required evaluators agreed.',result_finalized_by=NULL,result_finalized_at=NOW()
+            WHERE id=$1`,[scheduleId,st.unanimous_result]);
+          if(row.request_id)await client.query("UPDATE defense_requests SET status='Completed',review_feedback=$2,updated_at=NOW() WHERE id=$1 AND status<>'Completed'",[row.request_id,`Defense completed. Final result: ${st.unanimous_result}.`]);
+        } else {
+          finalizationStatus='Awaiting Coordinator';
+          await client.query("UPDATE schedules SET result_status='Awaiting Coordinator',defense_result=NULL,result_decision_note=NULL,result_finalized_by=NULL,result_finalized_at=NULL WHERE id=$1",[scheduleId]);
+        }
+      } else {
+        await client.query("UPDATE schedules SET result_status='Pending',defense_result=NULL WHERE id=$1",[scheduleId]);
+      }
+      return {evaluation:saved.rows[0],expected:Number(st.expected_count),submitted:Number(st.submitted_count),decisionCount:Number(st.decision_count),finalizationStatus};
+    });
+    await audit(req.session.user.id,'submit','evaluation',outcome.evaluation.id,{schedule_id:scheduleId,evaluator_result:result,finalization_status:outcome.finalizationStatus});
+    await syncCompletedDefenseRequests();
+    res.status(201).json(outcome);
+  }catch(e){res.status(e.status||500).json({error:e.message||'Unable to submit evaluation.'});}
+});
+
+app.patch('/api/evaluations/:scheduleId/final-result', auth, requireRole('coordinator'), async(req,res)=>{
+  const scheduleId=Number(req.params.scheduleId);
+  const finalResult=['Passed','Failed','For Revision','Re-defense Required'].includes(req.body.defense_result)?req.body.defense_result:null;
+  const note=cleanText(req.body.decision_note,2000);
+  if(!Number.isSafeInteger(scheduleId)||scheduleId<=0)return res.status(400).json({error:'Invalid defense schedule.'});
+  if(!finalResult)return res.status(400).json({error:'Select the final defense result.'});
+  if(!note)return res.status(400).json({error:'Explain the Coordinator final decision.'});
+  try{
+    const finalized=await withTransaction(async client=>{
+      const schedule=await client.query(`SELECT s.id,s.status,s.result_status,s.panel_outcome,s.request_id
+        FROM schedules s WHERE s.id=$1 FOR UPDATE`,[scheduleId]);
+      if(!schedule.rowCount)throw Object.assign(new Error('Defense schedule not found.'),{status:404});
+      const row=schedule.rows[0];
+      if(row.status==='Cancelled'||row.panel_outcome!=='Conducted')throw Object.assign(new Error('Only a conducted, active defense can receive a final result.'),{status:409});
+      if(row.result_status!=='Awaiting Coordinator')throw Object.assign(new Error('This defense is not awaiting a Coordinator final decision.'),{status:409});
+      const stats=await client.query(`WITH required AS (
+          SELECT user_id AS evaluator_id FROM panel_assignments WHERE schedule_id=$1
+        )
+        SELECT COUNT(*)::int expected_count,COUNT(e.id)::int submitted_count,COUNT(e.defense_result)::int decision_count,
+          COUNT(DISTINCT e.defense_result)::int distinct_result_count
+        FROM required LEFT JOIN evaluations e ON e.schedule_id=$1 AND e.evaluator_id=required.evaluator_id`,[scheduleId]);
+      const st=stats.rows[0];
+      if(Number(st.expected_count)===0||Number(st.submitted_count)<Number(st.expected_count)||Number(st.decision_count)<Number(st.expected_count))throw Object.assign(new Error('All evaluators assigned to this defense must submit an individual result before the Coordinator can finalize it.'),{status:409});
+      if(Number(st.distinct_result_count)<2)throw Object.assign(new Error('The evaluator results no longer disagree. Refresh the page; the system will finalize an unanimous result automatically.'),{status:409});
+      const saved=await client.query(`UPDATE schedules SET status='Completed',defense_result=$2,result_status='Finalized',
+          result_decision_note=$3,result_finalized_by=$4,result_finalized_at=NOW()
+        WHERE id=$1 RETURNING id,status,defense_result,result_status,result_decision_note,result_finalized_at`,[scheduleId,finalResult,note,req.session.user.id]);
+      if(row.request_id)await client.query("UPDATE defense_requests SET status='Completed',review_feedback=$2,updated_at=NOW() WHERE id=$1 AND status<>'Completed'",[row.request_id,`Defense completed. Final result: ${finalResult}.`]);
+      return saved.rows[0];
+    });
+    await audit(req.session.user.id,'finalize','defense_result',scheduleId,{defense_result:finalResult,decision_note:note});
+    await syncCompletedDefenseRequests();
+    res.json({schedule:finalized});
+  }catch(e){res.status(e.status||500).json({error:e.message||'Unable to finalize defense result.'});}
 });
 
 // Adviser feedback / student revise-resubmit loop.
@@ -1236,7 +1409,7 @@ app.get('/api/reports/summary', auth, requireRole('coordinator'), async(_req,res
 app.get('/api/reports/defense-schedule', auth, requireRole('coordinator'), async(_req,res)=>{const r=await q(`SELECT to_char(s.defense_date,'YYYY-MM-DD') defense_date,s.start_time,s.end_time,s.defense_type,s.status,s.defense_result,p.title,COALESCE(a.full_name,'Unassigned') adviser_name,COALESCE(r.name,'Room TBA') room_name FROM schedules s JOIN projects p ON p.id=s.project_id LEFT JOIN users a ON a.id=p.adviser_id LEFT JOIN rooms r ON r.id=s.room_id ORDER BY s.defense_date,s.start_time`);res.json({rows:r.rows});});
 app.get('/api/reports/panel-assignment', auth, requireRole('coordinator'), async(_req,res)=>{const r=await q(`SELECT to_char(s.defense_date,'YYYY-MM-DD') defense_date,s.start_time,p.title,u.full_name,u.email,pa.panel_role FROM panel_assignments pa JOIN schedules s ON s.id=pa.schedule_id JOIN projects p ON p.id=s.project_id JOIN users u ON u.id=pa.user_id ORDER BY s.defense_date,s.start_time,p.title,pa.panel_role`);res.json({rows:r.rows});});
 app.get('/api/reports/student-status', auth, requireRole('coordinator'), async(_req,res)=>{const r=await q(`SELECT p.title,p.type,p.status,COALESCE(a.full_name,'Unassigned') adviser_name,u.full_name student_name,u.email FROM projects p LEFT JOIN users a ON a.id=p.adviser_id LEFT JOIN project_members pm ON pm.project_id=p.id LEFT JOIN users u ON u.id=pm.student_id ORDER BY p.title,u.full_name`);res.json({rows:r.rows});});
-app.get('/api/reports/evaluation', auth, requireRole('coordinator'), async(_req,res)=>{const r=await q(`SELECT p.title,to_char(s.defense_date,'YYYY-MM-DD') defense_date,u.full_name evaluator_name,ROUND(((e.technical_score+e.presentation_score+e.documentation_score)/3)::numeric,1) average_score,e.recommendation,s.defense_result,e.comments FROM evaluations e JOIN schedules s ON s.id=e.schedule_id JOIN projects p ON p.id=s.project_id JOIN users u ON u.id=e.evaluator_id ORDER BY s.defense_date,p.title,u.full_name`);res.json({rows:r.rows});});
+app.get('/api/reports/evaluation', auth, requireRole('coordinator'), async(_req,res)=>{const r=await q(`SELECT p.title,to_char(s.defense_date,'YYYY-MM-DD') defense_date,u.full_name evaluator_name,ROUND(((e.technical_score+e.presentation_score+e.documentation_score)/3)::numeric,1) average_score,e.recommendation,e.defense_result AS evaluator_result,s.defense_result AS final_defense_result,s.result_status,s.result_decision_note,e.comments FROM evaluations e JOIN schedules s ON s.id=e.schedule_id JOIN projects p ON p.id=s.project_id JOIN users u ON u.id=e.evaluator_id ORDER BY s.defense_date,p.title,u.full_name`);res.json({rows:r.rows});});
 app.get('/api/audit-logs', auth, requireRole('coordinator'), async(_req,res)=>{const r=await q(`SELECT al.*,u.full_name user_name FROM audit_logs al LEFT JOIN users u ON u.id=al.user_id ORDER BY al.created_at DESC LIMIT 200`);res.json({logs:r.rows});});
 
 app.use('/api', (err, _req, res, _next) => { console.error(err); res.status(500).json({error:'Unexpected server error.'}); });

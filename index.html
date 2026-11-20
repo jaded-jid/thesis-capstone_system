@@ -3,30 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#eef2f5" />
-  <title>A Thesis and Capstone Defense Scheduling and Panel Management System</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Sora:wght@200;300;400&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css?v=20260910-theme2">
+  <meta name="theme-color" content="#f4f7fb" />
+  <meta name="description" content="ThesisFlow is an institution-managed workspace for thesis and capstone defense requests, scheduling, panel assignments, and project progress." />
+  <title>ThesisFlow | Defense Management Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css?v=20261118-adviser-dashboard-fix1"><link rel="stylesheet" href="/linear-modern.css?v=20261118-adviser-dashboard-fix1"><link rel="stylesheet" href="/theme-bridge.css?v=20261118-adviser-dashboard-fix1"><link rel="stylesheet" href="/landing-responsive.css?v=20261119-responsive1"><link rel="stylesheet" href="/light-only.css?v=20261119-light1"><link rel="stylesheet" href="/professional-design.css?v=20261120-date-entry-fix1"><link rel="stylesheet" href="/viewport-login-fix.css?v=20261120-viewport2">
 </head>
 <body>
   <div id="toast" class="toast" aria-live="polite"></div>
 
   <main id="authRoot" class="hero-auth">
-    <div class="hero-auth__media" aria-hidden="true">
-      <video autoplay muted loop playsinline preload="auto" poster="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260806_132328_5f9029c8-218f-4489-82b6-29ff2849920e.png">
-        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260806_133255_956f653f-5d80-4b06-abd5-0f46c98b60fa.mp4" type="video/mp4" />
-      </video>
-    </div>
-    <div class="hero-auth__scrim" aria-hidden="true"></div>
     <nav class="hero-auth__nav" aria-label="Primary">
-      <a class="hero-auth__logo" href="#" aria-label="Defense Management home">DEFENSE MANAGEMENT</a>
-      <div class="hero-theme-switch" role="group" aria-label="Login theme"><button class="hero-theme-option" id="authThemeLight" type="button">LIGHT</button><button class="hero-theme-option is-active" id="authThemeDark" type="button">DARK</button></div>
+      <a class="hero-auth__logo" href="#" aria-label="ThesisFlow home"><span class="brand-symbol" aria-hidden="true">T</span><span class="brand-wordmark">THESISFLOW<small>DEFENSE MANAGEMENT SYSTEM</small></span></a>
+      <span class="landing-secure-label"><span></span> INSTITUTIONAL WORKSPACE</span>
     </nav>
     <div class="hero-auth__body">
+      <section class="hero-auth__intro" aria-label="System overview">
+        <span class="landing-eyebrow">THESIS &amp; CAPSTONE OPERATIONS</span>
+        <h1>Every defense.<br><em>Better organized.</em></h1>
+        <p>One connected workspace for defense requests, academic schedules, panel assignments, and project progress.</p>
+        <div class="landing-benefits">
+          <div><span class="landing-benefit-icon">01</span><span><b>Clear scheduling</b><small>Coordinate dates, rooms, and panel availability.</small></span></div>
+          <div><span class="landing-benefit-icon">02</span><span><b>Role-based access</b><small>Give every academic role its own focused workspace.</small></span></div>
+          <div><span class="landing-benefit-icon">03</span><span><b>Progress visibility</b><small>Keep project activity and defense outcomes in view.</small></span></div>
+        </div>
+        <div class="landing-trust-note"><span class="landing-trust-dot"></span> Secure, institution-managed accounts</div>
+      </section>
       <section class="hero-auth__panel" aria-label="System login">
         <div id="roleStep" class="hero-step active">
-          <div class="hero-chip">[ THESIS / CAPSTONE ]</div>
-          <h1>DEFENSE<br>MANAGEMENT</h1>
-          <p class="hero-tagline">YOUR THESIS &amp; CAPSTONE DEFENSE SCHEDULING SYSTEM.</p>
+          <div class="hero-chip">WORKSPACE ACCESS</div>
+          <h2 class="landing-panel-title">Sign in to continue</h2>
+          <p class="hero-tagline">Choose your role to open the right workspace.</p>
           <div class="hero-form-label">SELECT YOUR ROLE</div>
           <div class="hero-role-list" id="roleGrid">
             <button class="hero-role" data-role="student"><span>01</span><strong>STUDENT</strong><small>Submit request · view schedule · result</small><i>↗</i></button>
@@ -58,14 +64,14 @@
         </div>
       </section>
     </div>
-    <footer class="hero-auth__footer" id="contact">
+    <footer class="hero-auth__footer">
       Academic scheduling system · Secure role-based access · Thesis &amp; Capstone Defense Management
     </footer>
   </main>
   <section id="appRoot" class="app-shell hidden">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-head">
-        <div class="brand-lockup"><div><strong>Defense Management</strong><small>Academic Scheduling System</small></div></div>
+        <div class="brand-lockup"><span class="app-brand-symbol" aria-hidden="true">T</span><div><strong>ThesisFlow</strong><small>Defense Management</small></div></div>
         <button class="mobile-nav-close" id="closeSidebar">×</button>
       </div>
       <div class="identity-card">
@@ -89,13 +95,13 @@
           <button class="menu-btn" id="openSidebar">☰</button>
           <div><p class="micro" id="pageKicker">Overview</p><h1 id="pageTitle">Dashboard</h1></div>
         </div>
-        <div class="topbar-right"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme"><span class="theme-toggle-icon">☾</span><span class="theme-toggle-label">Dark</span></button><div class="date-chip" id="today"></div></div>
+        <div class="topbar-right"><div class="date-chip" id="today"></div></div>
       </header>
       <div id="content" class="content"></div>
     </section>
   </section>
 
   <div id="modalRoot"></div>
-  <script src="/app.js?v=20261118-student-defense-guard1"></script>
+  <script src="/app.js?v=20261120-unlimited-project-students1"></script>
 </body>
 </html>

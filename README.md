@@ -35,3 +35,8 @@ Room assignment changes are made through **Edit schedule** in Defense Scheduling
 5. Open `http://localhost:10000`.
 
 The app initializes and migrates the schema on startup.
+
+
+## Defense evaluation and final result
+
+Each assigned panel member records an individual result with scores and comments. The Adviser is included as an evaluator only when explicitly assigned to that defense. The panel/evaluator roster is locked after a defense outcome is recorded so the required evaluator count cannot change after the event. The application finalizes the defense automatically only when all required evaluator decisions agree. If the decisions differ, the Coordinator must review the evaluations, select the final result and enter a decision note. The system then completes the schedule and linked defense request. No grading threshold is assumed because the project instructions do not provide one. See `docs/SYSTEM-FLOWCHART.md`.

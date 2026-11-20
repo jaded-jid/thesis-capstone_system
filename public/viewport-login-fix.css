@@ -1,0 +1,98 @@
+/* Final viewport and authentication visibility fixes.
+   This stylesheet must remain last in the landing page stylesheet order. */
+
+/* The landing page must grow with its content so short screens can scroll. */
+html,
+body {
+  min-height: 100%;
+  height: auto;
+}
+
+html:has(#authRoot.hero-auth:not(.hidden):not([hidden])),
+body:has(#authRoot.hero-auth:not(.hidden):not([hidden])) {
+  min-height: 100%;
+  height: auto;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto;
+}
+
+#authRoot.hero-auth:not(.hidden):not([hidden]) {
+  display: flex !important;
+  min-height: 100vh !important;
+  min-height: 100svh !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+#authRoot .hero-auth__body {
+  flex: 1 0 auto !important;
+  min-height: 0;
+  overflow: visible !important;
+}
+
+/* Critical: beat the ID-based display:flex rule in professional-design.css.
+   Otherwise adding .hidden after a successful login does not hide this shell. */
+#authRoot.hero-auth.hidden,
+#authRoot.hero-auth[hidden] {
+  display: none !important;
+}
+
+#appRoot.app-shell.hidden,
+#appRoot.app-shell[hidden] {
+  display: none !important;
+}
+
+/* Keep the authenticated workspace on its own internal scroll containers. */
+#appRoot.app-shell:not(.hidden):not([hidden]) {
+  display: flex !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+@media (max-height: 760px) and (min-width: 1001px) {
+  #authRoot .hero-auth__body {
+    min-height: 0 !important;
+    padding-top: clamp(20px, 3vh, 34px) !important;
+    padding-bottom: clamp(20px, 3vh, 34px) !important;
+  }
+  #authRoot .hero-auth__panel {
+    align-self: start !important;
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+  #authRoot .hero-auth__intro {
+    align-self: center;
+  }
+}
+
+@media (max-width: 1000px) {
+  #authRoot.hero-auth:not(.hidden):not([hidden]) {
+    overflow: visible !important;
+  }
+  #authRoot .hero-auth__body {
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    align-items: flex-start !important;
+  }
+}
+
+@media (max-width: 600px) {
+  html:has(#authRoot.hero-auth:not(.hidden):not([hidden])),
+  body:has(#authRoot.hero-auth:not(.hidden):not([hidden])) {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+  #authRoot.hero-auth:not(.hidden):not([hidden]) {
+    min-height: 100vh !important;
+    min-height: 100svh !important;
+    overflow: visible !important;
+  }
+  #authRoot .hero-auth__body {
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+  }
+}

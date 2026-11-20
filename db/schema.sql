@@ -64,6 +64,10 @@ CREATE TABLE IF NOT EXISTS schedules (
   room_id INTEGER REFERENCES rooms(id) ON DELETE SET NULL,
   status TEXT NOT NULL DEFAULT 'Upcoming' CHECK (status IN ('Upcoming','Completed','Cancelled')),
   defense_result TEXT CHECK (defense_result IN ('Passed','Failed','For Revision','Re-defense Required')),
+  result_status TEXT NOT NULL DEFAULT 'Pending' CHECK (result_status IN ('Pending','Awaiting Coordinator','Finalized')),
+  result_decision_note TEXT,
+  result_finalized_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  result_finalized_at TIMESTAMPTZ,
   panel_proceedance TEXT NOT NULL DEFAULT 'Pending' CHECK (panel_proceedance IN ('Pending','Proceed','Reschedule Requested')),
   panel_proceeded_at TIMESTAMPTZ,
   panel_outcome TEXT CHECK (panel_outcome IN ('Conducted','Not Conducted')),
@@ -107,6 +111,7 @@ CREATE TABLE IF NOT EXISTS evaluations (
   documentation_score NUMERIC(5,2) NOT NULL CHECK (documentation_score BETWEEN 0 AND 100),
   comments TEXT,
   recommendation TEXT NOT NULL DEFAULT 'For Revision',
+  defense_result TEXT CHECK (defense_result IS NULL OR defense_result IN ('Passed','Failed','For Revision','Re-defense Required')),
   confirmed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(schedule_id, evaluator_id)

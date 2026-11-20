@@ -1,0 +1,80 @@
+flowchart TD
+    A([START]) --> B["COORDINATOR / ADMINISTRATOR<br/>Create user accounts<br/>Register students, advisers and panel members<br/>Assign the correct account role"]
+    B --> C["ALL USERS<br/>Enter email and password"]
+    C --> D{Are the login credentials valid?}
+    D -- No --> E["SYSTEM<br/>Display login error<br/>User checks details and retries"]
+    E -. Retry .-> C
+    D -- Yes --> F["SYSTEM<br/>Open role-based dashboard<br/>Coordinator • Student • Adviser • Panel Member"]
+
+    F --> G["COORDINATOR<br/>Create and assign a project<br/>Enter thesis/capstone title and type<br/>Select multiple students and one adviser"]
+    G --> H["SYSTEM<br/>Validate project assignments<br/>Check account roles, active status and existing assignments"]
+    H --> I{Are all selected users eligible and unassigned?}
+    I -- No --> J["COORDINATOR<br/>Revise project assignments<br/>Choose eligible, unassigned users"]
+    J -. Recheck .-> H
+    I -- Yes --> K["SYSTEM<br/>Save project and assignments<br/>Make project visible to assigned students and adviser"]
+
+    K --> L["STUDENT<br/>View assigned project"]
+    L --> M["STUDENT<br/>Submit defense request<br/>Choose Proposal or Final Defense<br/>Enter preferred date, time and request details"]
+    M --> N["SYSTEM<br/>Validate defense request<br/>Check project membership, date/time and active request or schedule"]
+    N --> O{Is the defense request valid?}
+    O -- No --> P["STUDENT<br/>Correct request details"]
+    P -. Submit again .-> M
+    O -- Yes --> Q["SYSTEM<br/>Record request as Pending"]
+    Q --> R["COORDINATOR<br/>Review defense request"]
+    R --> S{Approve the request?}
+    S -- No --> T["COORDINATOR<br/>Return request with feedback"]
+    T --> U["STUDENT<br/>Revise and resubmit request"]
+    U -. Submit again .-> N
+    S -- Yes --> V["COORDINATOR<br/>Create defense schedule<br/>Confirm defense type, date and time"]
+    V --> W["COORDINATOR<br/>Assign panel members and room<br/>Assign chairperson and panel members<br/>Link project adviser"]
+    W --> X["SYSTEM<br/>Check scheduling conflicts<br/>Check student, adviser, panel member, room, date and time"]
+    X --> Y{Is there a scheduling conflict?}
+    Y -- Yes --> Z["COORDINATOR<br/>Resolve conflict<br/>Adjust date, time, panel or room"]
+    Z -. Recheck .-> X
+    Y -- No --> AA["SYSTEM<br/>Save and publish defense schedule"]
+
+    AA --> AB["PANEL MEMBER<br/>View assigned defense schedule"]
+    AB --> AC{Is a reschedule requested?}
+    AC -- Yes --> AD["COORDINATOR<br/>Review reschedule request<br/>Revise schedule when approved"]
+    AD -. Recheck availability .-> X
+    AC -- No --> AE["STUDENT AND PANEL<br/>Conduct the defense"]
+    AE --> AF["PANEL MEMBER<br/>Confirm defense outcome"]
+    AF --> AG{Was the defense conducted?}
+    AG -- No --> AH["PANEL MEMBER / COORDINATOR<br/>Report Not Conducted<br/>Coordinator reviews and arranges next step"]
+    AH -. Reschedule and recheck .-> X
+    AG -- Yes --> AI["PANEL MEMBERS / ADVISER<br/>Submit defense evaluations<br/>Enter scores, recommendations and comments"]
+    AI --> AJ["SYSTEM<br/>Store evaluations and check submissions"]
+    AJ --> AK{Have all required evaluators submitted?}
+    AK -- No --> AL["SYSTEM<br/>Wait for remaining evaluations"]
+    AL -. Check again .-> AJ
+    AK -- Yes --> AM["SYSTEM<br/>Record final defense result<br/>Complete defense and linked request"]
+    AM --> AN["STUDENT<br/>View recorded defense result"]
+    AN --> AO["COORDINATOR<br/>Generate defense reports<br/>Schedules, panel assignments, student status and evaluations"]
+    AO --> AP([END])
+
+    subgraph LEGEND["LEGEND"]
+      L1([Start / End])
+      L2[Process / Activity]
+      L3{Decision}
+      L4[→ Direction of flow]
+      L5[Coordinator / Admin]
+      L6[Student]
+      L7[Adviser]
+      L8[Panel Member]
+      L9[System]
+    end
+
+    classDef terminator fill:#17345B,stroke:#17345B,color:#FFFFFF,stroke-width:2px;
+    classDef coordinator fill:#EAF1FF,stroke:#4772C8,color:#17233A,stroke-width:2px;
+    classDef student fill:#E9F7F0,stroke:#25845C,color:#17233A,stroke-width:2px;
+    classDef panel fill:#F3EDFF,stroke:#7655B8,color:#17233A,stroke-width:2px;
+    classDef adviser fill:#E5F7F7,stroke:#168C91,color:#17233A,stroke-width:2px;
+    classDef system fill:#F0F4F8,stroke:#8190A5,color:#17233A,stroke-width:2px;
+    classDef decision fill:#FFF5D9,stroke:#D49A28,color:#573D0B,stroke-width:2px;
+    class A,AP,L1 terminator;
+    class B,G,J,R,T,V,W,Z,AD,AO,L5 coordinator;
+    class M,L,P,U,AE,AN,L6 student;
+    class AB,AF,AI,L8 panel;
+    class L7 adviser;
+    class C,E,F,H,K,N,Q,X,AA,AJ,AL,AM,L2,L4,L9 system;
+    class D,I,O,S,Y,AC,AG,AK,L3 decision;

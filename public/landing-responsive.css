@@ -1,0 +1,514 @@
+/* =====================================================================
+   LANDING PAGE RESPONSIVE LAYOUT
+   Dedicated final overrides for desktop, laptop, tablet, and mobile.
+   This file loads after the legacy landing-page rules so that the
+   responsive layout has one predictable set of breakpoint behaviors.
+   ===================================================================== */
+
+#authRoot.hero-auth {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  height: auto;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: visible;
+  isolation: isolate;
+}
+
+#authRoot .hero-auth__nav {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  gap: 16px;
+  padding: clamp(16px, 2.2vw, 30px) clamp(20px, 4vw, 64px);
+}
+
+#authRoot .hero-auth__logo {
+  min-width: 0;
+  max-width: min(70%, 620px);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+}
+
+#authRoot .hero-theme-switch {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+#authRoot .hero-auth__body {
+  flex: 1 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, min(620px, 48vw)) minmax(0, .38fr);
+  align-items: center;
+  justify-content: initial;
+  width: 100%;
+  min-width: 0;
+  min-height: 560px;
+  box-sizing: border-box;
+  overflow: visible;
+  padding: clamp(24px, 3vw, 46px) clamp(20px, 4vw, 64px);
+}
+
+#authRoot .hero-auth__panel {
+  grid-column: 2;
+  justify-self: center;
+  width: 100%;
+  min-width: 0;
+  max-width: 620px;
+  align-self: center;
+}
+
+#authRoot .hero-step,
+#authRoot .hero-step.active {
+  width: 100%;
+  min-width: 0;
+}
+
+#authRoot .hero-auth h1,
+#authRoot .hero-auth h2,
+#authRoot .hero-tagline,
+#authRoot .hero-note,
+#authRoot .hero-contact-box,
+#authRoot .hero-login-form,
+#authRoot .hero-role-list {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+#authRoot .hero-role {
+  min-width: 0;
+  min-height: 68px;
+  grid-template-columns: 38px minmax(0, 1fr) 18px;
+  column-gap: 12px;
+  padding: 13px 15px;
+  border-radius: 10px;
+  text-align: left;
+}
+
+#authRoot .hero-role strong,
+#authRoot .hero-role small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+#authRoot .hero-role strong {
+  line-height: 1.3;
+}
+
+#authRoot .hero-role small {
+  line-height: 1.4;
+}
+
+#authRoot .hero-role i {
+  justify-self: end;
+}
+
+#authRoot .hero-field input {
+  min-height: 46px;
+  box-sizing: border-box;
+}
+
+#authRoot .hero-password button {
+  min-width: 48px;
+  min-height: 40px;
+}
+
+#authRoot .hero-btn {
+  min-height: 50px;
+}
+
+#authRoot .hero-auth__footer {
+  flex: 0 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+/* Large desktop monitors. */
+@media (min-width: 1500px) {
+  #authRoot .hero-auth__body {
+    grid-template-columns: minmax(0, 1.2fr) minmax(500px, 640px) minmax(100px, .45fr);
+    padding-left: clamp(48px, 5vw, 110px);
+    padding-right: clamp(48px, 5vw, 110px);
+  }
+
+  #authRoot .hero-auth__panel {
+    max-width: 640px;
+  }
+}
+
+/* Laptop and tablet widths: keep the role selector in one readable column. */
+@media (max-width: 1000px) {
+  #authRoot .hero-auth__body {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 0;
+    padding: 30px clamp(24px, 5vw, 52px) 38px;
+  }
+
+  #authRoot .hero-auth__panel {
+    width: min(640px, 100%);
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  #authRoot .hero-auth h1 {
+    font-size: clamp(48px, 8vw, 76px);
+    line-height: .94;
+    margin-top: 22px;
+  }
+
+  #authRoot .hero-auth h2 {
+    font-size: clamp(40px, 7vw, 62px);
+    line-height: .96;
+    margin-top: 20px;
+  }
+
+  #authRoot .hero-tagline {
+    font-size: clamp(10px, 1.5vw, 13px);
+    line-height: 1.5;
+    letter-spacing: .1em;
+  }
+
+  #authRoot .hero-form-label,
+  #authRoot .hero-login-form {
+    margin-top: 26px;
+  }
+
+  #authRoot .hero-role-list {
+    gap: 9px;
+    margin-top: 10px;
+  }
+
+  #authRoot .hero-role {
+    min-height: 72px;
+    padding: 14px 15px;
+  }
+
+  #authRoot .hero-role strong {
+    font-size: 12px;
+    letter-spacing: .1em;
+  }
+
+  #authRoot .hero-role small {
+    font-size: 9px;
+  }
+
+  #authRoot .hero-contact-box {
+    margin-top: 22px;
+    padding-top: 16px;
+  }
+}
+
+/* Phone layout. Content grows naturally and the page scrolls vertically. */
+@media (max-width: 600px) {
+  html,
+  body {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  #authRoot.hero-auth {
+    min-height: 100vh;
+    min-height: 100svh;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: visible;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  #authRoot .hero-auth__media,
+  #authRoot .hero-auth__scrim {
+    position: fixed;
+    inset: 0;
+  }
+
+  #authRoot .hero-auth__media {
+    background-image: url("https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260806_132328_5f9029c8-218f-4489-82b6-29ff2849920e.png");
+    background-size: cover;
+    background-position: center;
+    background-color: #080a0f;
+  }
+
+  #authRoot .hero-auth__media video {
+    display: none;
+  }
+
+  #authRoot .hero-auth__scrim {
+    background: linear-gradient(180deg, rgba(3, 5, 9, .72) 0%, rgba(3, 5, 9, .58) 36%, rgba(3, 5, 9, .84) 100%);
+  }
+
+  #authRoot .hero-auth__nav {
+    padding: max(14px, env(safe-area-inset-top)) 16px 12px;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #authRoot .hero-auth__logo {
+    max-width: calc(100% - 116px);
+    font-size: clamp(12px, 3.6vw, 16px);
+    letter-spacing: .09em;
+    line-height: 1.25;
+  }
+
+  #authRoot .hero-theme-switch {
+    padding: 2px;
+  }
+
+  #authRoot .hero-theme-option {
+    padding: 8px 9px;
+    font-size: 8px;
+    letter-spacing: .1em;
+  }
+
+  #authRoot .hero-auth__body {
+    display: flex;
+    flex: 1 0 auto;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    min-height: 0;
+    padding: 24px 16px 30px;
+    overflow: visible;
+  }
+
+  #authRoot .hero-auth__panel {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  #authRoot .hero-chip {
+    padding: 8px 11px;
+    font-size: 9px;
+    letter-spacing: .13em;
+  }
+
+  #authRoot .hero-auth h1 {
+    margin-top: 18px;
+    font-size: clamp(38px, 11.5vw, 56px);
+    line-height: .96;
+    letter-spacing: .015em;
+  }
+
+  #authRoot .hero-auth h2 {
+    margin-top: 16px;
+    font-size: clamp(34px, 9.5vw, 48px);
+    line-height: 1;
+    letter-spacing: .01em;
+  }
+
+  #authRoot .hero-tagline {
+    margin-top: 10px;
+    font-size: 9px;
+    line-height: 1.5;
+    letter-spacing: .08em;
+    overflow-wrap: anywhere;
+  }
+
+  #authRoot .hero-form-label {
+    margin-top: 22px;
+    font-size: 9px;
+    letter-spacing: .14em;
+  }
+
+  #authRoot .hero-role-list {
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  #authRoot .hero-role {
+    min-height: 70px;
+    grid-template-columns: 28px minmax(0, 1fr) 14px;
+    column-gap: 8px;
+    padding: 12px 11px;
+    border-radius: 11px;
+  }
+
+  #authRoot .hero-role span {
+    font-size: 8px;
+  }
+
+  #authRoot .hero-role strong {
+    font-size: 10px;
+    line-height: 1.35;
+    letter-spacing: .07em;
+  }
+
+  #authRoot .hero-role small {
+    margin-top: 3px;
+    font-size: 8px;
+    line-height: 1.35;
+    letter-spacing: 0;
+  }
+
+  #authRoot .hero-role i {
+    font-size: 10px;
+  }
+
+  #authRoot .hero-note {
+    margin-top: 12px;
+    font-size: 9px;
+    line-height: 1.45;
+  }
+
+  #authRoot .hero-back {
+    min-height: 40px;
+    margin-bottom: 12px;
+    font-size: 9px;
+  }
+
+  #authRoot .hero-role-purpose {
+    font-size: 8px;
+    letter-spacing: .13em;
+  }
+
+  #authRoot .hero-login-form {
+    gap: 18px;
+    margin-top: 26px;
+  }
+
+  #authRoot .hero-field {
+    font-size: 9px;
+    letter-spacing: .12em;
+  }
+
+  #authRoot .hero-field input {
+    min-height: 48px;
+    margin-top: 7px;
+    padding: 8px 2px 10px;
+    font-size: 16px;
+  }
+
+  #authRoot .hero-password input {
+    padding-right: 62px;
+  }
+
+  #authRoot .hero-password button {
+    right: 0;
+    bottom: 4px;
+    min-width: 48px;
+    min-height: 42px;
+    font-size: 9px;
+  }
+
+  #authRoot .hero-btn {
+    min-height: 50px;
+    padding: 15px 16px;
+    font-size: 10px;
+    letter-spacing: .14em;
+  }
+
+  #authRoot .hero-contact-box {
+    margin-top: 20px;
+    padding: 14px 14px 0;
+  }
+
+  #authRoot .hero-contact-box__eyebrow {
+    font-size: 8px;
+  }
+
+  #authRoot .hero-contact-box strong {
+    font-size: 10px;
+  }
+
+  #authRoot .hero-contact-box p {
+    font-size: 9px;
+    line-height: 1.5;
+  }
+
+  #authRoot .hero-contact-box small {
+    font-size: 8px;
+    line-height: 1.45;
+  }
+
+  #authRoot .hero-auth__footer {
+    padding: 14px 16px max(16px, env(safe-area-inset-bottom));
+    font-size: 8px;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  #authRoot .hero-bg-orbit--one {
+    width: 250px;
+    right: -145px;
+    top: 36%;
+  }
+
+  #authRoot .hero-bg-orbit--two {
+    width: 150px;
+    right: -20px;
+    top: 52%;
+  }
+}
+
+/* Small phones: prevent the logo, theme buttons, and long role label colliding. */
+@media (max-width: 360px) {
+  #authRoot .hero-auth__nav {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  #authRoot .hero-auth__logo {
+    max-width: calc(100% - 108px);
+    font-size: 11px;
+    letter-spacing: .07em;
+  }
+
+  #authRoot .hero-theme-option {
+    padding: 7px 7px;
+    font-size: 7px;
+  }
+
+  #authRoot .hero-auth__body {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  #authRoot .hero-role {
+    grid-template-columns: 24px minmax(0, 1fr) 12px;
+    column-gap: 7px;
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  #authRoot .hero-role strong { font-size: 9px; }
+  #authRoot .hero-role small { font-size: 7.5px; }
+}
+
+/* Short landscape phones and compact laptop viewports remain scrollable. */
+@media (max-height: 620px) {
+  #authRoot.hero-auth {
+    height: auto;
+    min-height: 100svh;
+    overflow-y: visible;
+  }
+
+  #authRoot .hero-auth__body {
+    min-height: 0;
+    padding-top: 18px;
+    padding-bottom: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #authRoot .hero-auth__media video { display: none; }
+  #authRoot .hero-bg-orbit--one,
+  #authRoot .hero-bg-orbit--two,
+  #authRoot .hero-bg-scan { animation: none !important; }
+  #authRoot .hero-role { transition: none !important; }
+}
+
+@media (hover: none) {
+  #authRoot .hero-role:hover { transform: none; }
+}

@@ -978,3 +978,23 @@ body:not(.dark-mode) #authRoot .hero-contact-box p { color:#33424f !important; }
     overflow: hidden !important;
   }
 }
+
+
+/* Unlimited multi-student project assignment picker */
+.project-student-picker{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:8px;padding:6px;display:flex;flex-direction:column;gap:3px;scrollbar-width:thin}
+.project-student-option{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;cursor:pointer;min-width:0;transition:background .15s ease}
+.project-student-option:hover{background:#f4f6fb}
+.project-student-option input[type=checkbox]{width:17px;height:17px;flex:0 0 17px;margin:0;accent-color:#315fc8;cursor:pointer}
+.project-student-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+.project-student-copy strong{font-size:12px;color:#202938;font-weight:700;overflow-wrap:anywhere}
+.project-student-copy small{font-size:10px;color:#718096;line-height:1.4;overflow-wrap:anywhere}
+.project-student-option.is-assigned{cursor:not-allowed;opacity:.62;background:#f8f9fb}
+.project-student-option.is-assigned input{cursor:not-allowed}
+.project-student-state{flex:0 0 auto;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#7a8494;background:#edf0f4;padding:4px 7px;border-radius:999px}
+.project-student-empty{padding:18px 12px;color:#718096;font-size:12px;text-align:center}
+#f-student-selection-count{font-size:11px;font-weight:700;color:#315fc8;margin-top:7px}
+#f-student-search{margin-top:8px}
+@media(max-width:640px){.project-student-picker{max-height:220px}.project-student-option{padding:10px 8px}}
+
+/* Coordinator final-result review: show every evaluator's evidence before recording a final decision. */
+.eval-review-list{display:grid;gap:10px;max-height:330px;overflow:auto;padding:2px 3px 4px}.eval-review-list h4{margin:0;font-size:12px;color:var(--ink)}.eval-review-item{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fafbfc}.eval-review-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.eval-review-top>b{font-size:12px}.eval-review-scores{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0}.eval-review-scores span{display:block;padding:7px;border-radius:8px;background:#f0f3f8;color:#687386;font-size:9px}.eval-review-scores b{display:block;color:#1d2939;font-size:12px;margin-top:3px}.eval-review-meta{font-size:10px;color:#586477}.eval-review-item p{margin:8px 0 0;font-size:10px;line-height:1.45;color:#586477;white-space:pre-wrap}@media(max-width:560px){.eval-review-scores{grid-template-columns:1fr 1fr}}
